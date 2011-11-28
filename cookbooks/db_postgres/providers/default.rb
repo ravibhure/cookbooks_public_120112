@@ -76,13 +76,12 @@ action :firewall_update do
   end
 end
 
-
 action :write_backup_info do
   masterstatus = Hash.new
   masterstatus = RightScale::Database::PostgreSQL::Helper.do_query(node, 'select pg_last_xlog_receive_location()')
   masterstatus['Master_IP'] = node[:db][:current_master_ip]
   masterstatus['Master_instance_uuid'] = node[:db][:current_master_uuid]
-  slavestatus = RightScale::Database::MySQL::Helper.do_query(node, 'select pg_last_xlog_receive_location()')
+  slavestatus = RightScale::Database::PostgreSQL::Helper.do_query(node, 'select pg_last_xlog_receive_location()')
   slavestatus ||= Hash.new
   if node[:db][:this_is_master]
     Chef::Log.info "Backing up Master info"
@@ -92,7 +91,7 @@ action :write_backup_info do
     masterstatus['Position'] = slavestatus['Exec_Master_Log_Pos']
   end
   Chef::Log.info "Saving master info...:\n#{masterstatus.to_yaml}"
-  ::File.open(::File.join(node[:db][:data_dir], RightScale::Database::MySQL::Helper::SNAPSHOT_POSITION_FILENAME), ::File::CREAT|::File::TRUNC|::File::RDWR) do |out|
+  ::File.open(::File.join(node[:db][:data_dir], RightScale::Database::PostgreSQL::Helper::SNAPSHOT_POSITION_FILENAME), ::File::CREAT|::File::TRUNC|::File::RDWR) do |out|
     YAML.dump(masterstatus, out)
   end
 end
@@ -104,7 +103,7 @@ end
 
 action :post_restore_cleanup do
   @db = init(new_resource)
-  @db.symlink_datadir("/var/lib/mysql", node[:db][:data_dir])
+  @db.symlink_datadir("/var/lib/pgsql/9.1/data", node[:db][:data_dir])
   # TODO: used for replication
   # @db.post_restore_sanity_check
   @db.post_restore_cleanup
@@ -135,15 +134,16 @@ end
 
 action :install_client do
 
-  # == Install MySQL 5.1 package(s)
+  # Install PostgreSQL 9.1.1 package(s)
   if node[:platform] == "centos"
+  
+  # Install PostgreSQL GPG Key (http://yum.postgresql.org/9.1/redhat/rhel-5-(arch)/pgdg-centos91-9.1-4.noarch.rpm)
+    reporpm = ::File.join(::File.dirname(__FILE__), "..", "files", "centos", "pgdg-centos91-9.1-4.noarch.rpm")
+    `rpm --install #{reporpm}`
 
-    # Install MySQL GPG Key (http://download.oracle.com/docs/cd/E17952_01/refman-5.5-en/checking-gpg-signature.html)
-    gpgkey = ::File.join(::File.dirname(__FILE__), "..", "files", "centos", "mysql_pubkey.asc")
-    `rpm --import #{gpgkey}`
-
-    # Packages from rightscale-software repository for MySQL 5.1
-    packages = ["MySQL-shared-compat", "MySQL-devel-community", "MySQL-client-community" ]
+    # Packages from cookbook files as attachment for PostgreSQL 9.1.1
+    packages = ["postgresql91-devel", "postgresql91-libs", "postgresql91", "postgresql91-contrib"  ]
+    #packages = ::File.join(::File.dirname(__FILE__), "..", "files", "centos", "#{packages}")
     Chef::Log.info("Packages to install: #{packages.join(",")}")
     packages.each do |p|
       r = package p do
@@ -155,24 +155,23 @@ action :install_client do
   else
 
     # Install development library in compile phase
-    p = package "mysql-dev" do
+    p = package "postgresql-client-9" do
       package_name value_for_platform(
         "ubuntu" => {
-          "8.04" => "libmysqlclient15-dev",
-          "8.10" => "libmysqlclient15-dev",
-          "9.04" => "libmysqlclient15-dev"
+          "9.04" => "postgresql-client-9.1",
+          "10.04" => "postgresql-client-9.1"
         },
-        "default" => 'libmysqlclient-dev'
+        "default" => 'postgresql-client-9.1'
       )
       action :nothing
     end
     p.run_action(:install)
 
     # install client in converge phase
-    package "mysql-client" do
+    package "postgresql191-devel" do
       package_name value_for_platform(
-        [ "centos", "redhat", "suse" ] => { "default" => "mysql" },
-        "default" => "mysql-client"
+        [ "centos", "redhat", "suse" ] => { "default" => "postgresql191-devel" },
+        "default" => "postgresql191-devel"
       )
       action :install
     end
@@ -180,12 +179,12 @@ action :install_client do
   end
 
 
-  # == Install MySQL client gem
+  # == Install PostgreSQL client gem
   #
   # Also installs in compile phase
   #
-  r = execute "install mysql gem" do
-    command "/opt/rightscale/sandbox/bin/gem install mysql --no-rdoc --no-ri -v 2.7 -- --build-flags --with-mysql-config"
+  r = execute "install postgresql gem" do
+    command "/opt/rightscale/sandbox/bin/gem install pg --no-rdoc --no-ri -- --build-flags --with-pg-config=/usr/pgsql-9.1/bin/pg_config"
   end
   r.run_action(:run)
 
@@ -195,144 +194,124 @@ end
 
 action :install_server do
 
-  # MySQL server depends on MySQL client
+  # PostgreSQL server depends on PostgreSQL client
   action_install_client
 
-  # == Install MySQL 5.1 and other packages
+  # == Install PostgreSQL 9.1 and other packages
   #
-  node[:db_mysql][:packages_install].each do |p|
+  node[:db_postgres][:packages_install].each do |p|
     package p
-  end unless node[:db_mysql][:packages_install] == ""
+  end unless node[:db_postgres][:packages_install] == ""
 
   # Uninstall other packages we don't
-  node[:db_mysql][:packages_uninstall].each do |p|
+  node[:db_postgres][:packages_uninstall].each do |p|
      package p do
        action :remove
      end
-  end unless node[:db_mysql][:packages_uninstall] == ""
+  end unless node[:db_postgres][:packages_uninstall] == ""
 
-  service "mysql" do
-    #service_name value_for_platform([ "centos", "redhat", "suse" ] => {"default" => "mysqld"}, "default" => "mysql")
+  service "postgresql-9.1" do
+    #service_name value_for_platform([ "centos", "redhat", "suse" ] => {"default" => "postgresql-9.1"}, "default" => "postgresql-9.1")
     supports :status => true, :restart => true, :reload => true
     action :stop
   end
 
-  # Create MySQL server system tables
-  touchfile = ::File.expand_path "~/.mysql_installed"
-  execute "/usr/bin/mysql_install_db ; touch #{touchfile}" do
+  # Initialize PostgreSQL server and create system tables
+  touchfile = ::File.expand_path "~/.postgresql_installed"
+  execute "/etc/init.d/postgresql-9.1 initdb" do
     creates touchfile
   end
 
-  # == Configure system for MySQL
+  # == Configure system for PostgreSQL
   #
 
-  # Stop MySQL
-  service "mysql" do
+  # Stop PostgreSQL
+  service "postgresql-9.1" do
     supports :status => true, :restart => true, :reload => true
     action :stop
   end
 
 
-  # moves mysql default db to storage location, removes ib_logfiles for re-config of innodb_log_file_size
-  touchfile = ::File.expand_path "~/.mysql_dbmoved"
+  # moves postgresql default db to storage location
+  touchfile = ::File.expand_path "~/.postgresql_dbmoved"
   ruby_block "clean innodb logfiles" do
     not_if { ::File.exists?(touchfile) }
     block do
       require 'fileutils'
-      remove_files = ::Dir.glob(::File.join(node[:db_mysql][:datadir], 'ib_logfile*')) + ::Dir.glob(::File.join(node[:db_mysql][:datadir], 'ibdata*'))
+     # remove_files = ::Dir.glob(::File.join(node[:db_postgres][:basedir], 'pgstartup.log*')) + ::Dir.glob(::File.join(node[:db_postgres][:basedir], 'ibdata*'))
+      remove_files = ::Dir.glob(::File.join(node[:db_postgres][:basedir], 'pgstartup.log*')) 
       FileUtils.rm_rf(remove_files)
       ::File.open(touchfile,'a'){}
     end
   end
 
-  # Initialize the binlog dir
-  binlog = ::File.dirname(node[:db_mysql][:log_bin])
-  directory binlog do
-    owner "mysql"
-    group "mysql"
-    recursive true
-  end
 
-  # Create the tmp directory
-  directory "/mnt/mysqltmp" do
-    owner "mysql"
-    group "mysql"
+  # Create the archive directory
+  directory "/mnt/archive" do
+    owner "postgresql"
+    group "postgresql"
     mode 0770
     recursive true
   end
 
-  # Create it so mysql can use it if configured
-  file "/var/log/mysqlslow.log" do
-    owner "mysql"
-    group "mysql"
-  end
+  # Setup postgresql.conf
+  template_source = "postgresql.conf.erb"
 
-  # Setup my.cnf
-  template_source = "my.cnf.erb"
-
-  template value_for_platform([ "centos", "redhat", "suse" ] => {"default" => "/etc/my.cnf"}, "default" => "/etc/mysql/my.cnf") do
+  template value_for_platform([ "centos", "redhat", "suse" ] => {"default" => "{[:db_postgres][:datadir]}/postgresql.conf"}, "default" => "{[:db_postgres][:datadir]}/postgresql.conf") do
     source template_source
-    owner "root"
-    group "root"
+    owner "postgres"
+    group "postgres"
     mode "0644"
     variables(
       :server_id => mycnf_uuid
     )
-    cookbook 'db_mysql'
+    cookbook 'db_postgres'
+  end
+  
+  # Setup pg_hba.conf
+  pg_template_source = "pg_hba.conf.erb"  
+  
+    template value_for_platform([ "centos", "redhat", "suse" ] => {"default" => "#{node[:db_postgres][:datadir]}/pg_hba.conf"}, "default" => "#{node[:db_postgres][:datadir]}/pg_hba.conf") do
+    source pg_template_source
+    owner "postgres"
+    group "postgres"
+    mode "0644"
+    variables(
+      :server_id => mycnf_uuid
+    )
+    cookbook 'db_postgres'
   end
 
-  # == Setup MySQL user limits
+  # == Setup PostgreSQL user limits
   #
-  # Set the mysql and root users max open files to a really large number.
+  # Set the postgres and root users max open files to a really large number.
   # 1/3 of the overall system file max should be large enough.  The percentage can be
   # adjusted if necessary.
   #
-  mysql_file_ulimit = `sysctl -n fs.file-max`.to_i/33
+  postgres_file_ulimit = `sysctl -n fs.file-max`.to_i/33
 
-  template "/etc/security/limits.d/mysql.limits.conf" do
-    source "mysql.limits.conf.erb"
+  template "/etc/security/limits.d/postgres.limits.conf" do
+    source "postgres.limits.conf.erb"
     variables({
-      :ulimit => mysql_file_ulimit
+      :ulimit => postgres_file_ulimit
     })
-    cookbook 'db_mysql'
+    cookbook 'db_postgres'
   end
 
   # Change root's limitations for THIS shell.  The entry in the limits.d will be
   # used for future logins.
-  # The setting needs to be in place before mysql is started.
+  # The setting needs to be in place before postgresql-9 is started.
   #
-  execute "ulimit -n #{mysql_file_ulimit}"
+  execute "ulimit -n #{postgres_file_ulimit}"
 
-
-  # == Drop in best practice replacement for mysqld startup.
+  # == Start PostgreSQL
   #
-  # Timeouts enabled.
-  #
-  template value_for_platform([ "centos", "redhat", "suse" ] => {"default" => "/etc/init.d/mysql"}, "default" => "/etc/init.d/mysql") do
-    source "init-mysql.erb"
-    mode "0755"
-    cookbook 'db_mysql'
-  end
-
-  ## == Setup log rotation
-  ##
-  #rs_utils_logrotate_app "mysql-server" do
-  #  template "mysql-server.logrotate.erb"
-  #  cookbook "db_mysql"
-  #  path ["/var/log/mysql*.log", "/var/log/mysql*.err" ]
-  #  frequency "daily"
-  #  rotate 7
-  #  create "640 mysql adm"
-  #end
-
-  # == Start MySQL
-  #
-  service "mysql" do
+  service "postgresql-9.1" do
     supports :status => true, :restart => true, :reload => true
     action :start
   end
 
-end
+end 
 
 action :setup_monitoring do
   service "collectd" do
@@ -347,24 +326,24 @@ action :setup_monitoring do
     TMP_FILE = "/tmp/collectd.rpm"
 
     remote_file TMP_FILE do
-      source "collectd-mysql-4.10.0-4.el5.#{arch}.rpm"
-      cookbook 'db_mysql'
+      source "collectd-postgresql-4.10.0-4.el5.#{arch}.rpm"
+      cookbook 'db_postgres'
     end
 
     package TMP_FILE do
       source TMP_FILE
     end
 
-    template ::File.join(node[:rs_utils][:collectd_plugin_dir], 'mysql.conf') do
+    template ::File.join(node[:rs_utils][:collectd_plugin_dir], 'postgresql.conf') do
       backup false
-      source "mysql_collectd_plugin.conf.erb"
+      source "postgresql_collectd_plugin.conf.erb"
       notifies :restart, resources(:service => "collectd")
-      cookbook 'db_mysql'
+      cookbook 'db_postgres'
     end
 
   else
 
-    log "WARNING: attempting to install collectd-mysql on unsupported platform #{node[:platform]}, continuing.." do
+    log "WARNING: attempting to install collectd-postgresql on unsupported platform #{node[:platform]}, continuing.." do
       level :warn
     end
 
