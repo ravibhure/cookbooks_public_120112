@@ -1,0 +1,36 @@
+{
+  "platforms": {
+  },
+  "description": "Installs/Configures lapp",
+  "suggestions": {
+  },
+  "conflicting": {
+  },
+  "recipes": {
+    "lapp::default": "Allows the LAPP cookbook to override attributes from other cookbooks.  No installation or configuration is done."
+  },
+  "long_description": "= RightScale LAPP Cookbook (Alpha)\n\n== DESCRIPTION:\n\n== DETAILS:\n\n== REQUIREMENTS:\n\n== SETUP:\n\n== USAGE:\n\n== KNOWN LIMITATIONS:\n",
+  "providing": {
+  },
+  "version": "0.1.0",
+  "attributes": {
+  },
+  "maintainer": "RightScale, Inc.",
+  "replacing": {
+  },
+  "license": "All rights reserved",
+  "maintainer_email": "support@rightscale.com",
+  "name": "lapp",
+  "groupings": {
+  },
+  "dependencies": {
+    "app_php": [
+
+    ],
+    "db_postgres": [
+
+    ]
+  },
+  "recommendations": {
+  }
+}
