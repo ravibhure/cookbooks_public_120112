@@ -81,6 +81,7 @@ attribute "db/fqdn",
 attribute "db/provider",
   :display_name => "Database Provider",
   :description => "The database provider for the Master Database.",
+  :required => true, 
   :default => "db_mysql",
   :choice => [ "db_mysql", "db_postgres" ],
   :recipes => [ "db::default" ]
