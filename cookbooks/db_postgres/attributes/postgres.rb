@@ -31,7 +31,9 @@ set_unless[:db_postgres][:previous_master] = nil
 # Optional attributes
 #
 set_unless[:db_postgres][:port] = "5432"
-set_unless[:postgresql][:version] = "9.1"
+set_unless[:db_postgres][:version] = "9.1"
+set_unless[:db_postgres][:admin_role] = "admins"
+set_unless[:db_postgres][:user_role] = "users"
 
 set_unless[:db_postgres][:tmpdir] = "/tmp"
 set_unless[:db_postgres][:datadir] = "/var/lib/pgsql/#{node[:postgresql][:version]}/data"
@@ -52,7 +54,7 @@ set_unless[:db_postgres][:dump][:prefix] = ""
 
 case platform
 when "redhat","centos","fedora","suse"
-        set[:db_postgres][:socket] = "/var/run/postgresql"
+  set[:db_postgres][:socket] = "/var/run/postgresql"
   set_unless[:db_postgres][:basedir] = "/var/lib/pgsql/#{node[:postgresql][:version]}"
   set_unless[:db_postgres][:packages_uninstall] = ""
   set_unless[:db_postgres][:packages_install] = ["postgresql91-server", "postgresql91-libs", "postgresql91-devel", "postgresql91" ]

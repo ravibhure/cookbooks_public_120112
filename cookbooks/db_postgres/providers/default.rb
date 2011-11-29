@@ -183,8 +183,8 @@ action :install_client do
   #
   # Also installs in compile phase
   #
-  r = execute "install postgresql gem" do
-    command "/opt/rightscale/sandbox/bin/gem install pg --no-rdoc --no-ri -- --build-flags --with-pg-config=/usr/pgsql-#{node[:postgresql][:version]}/bin/pg_config"
+  r = execute "install pg gem" do
+    command "/opt/rightscale/sandbox/bin/gem install pg --no-rdoc --no-ri -- --with-pg-config=/usr/pgsql-#{node[:postgresql][:version]}/bin/pg_config"
   end
   r.run_action(:run)
 
@@ -257,7 +257,7 @@ action :install_server do
   # Setup postgresql.conf
   template_source = "postgresql.conf.erb"
 
-  template value_for_platform([ "centos", "redhat", "suse" ] => {"default" => "{[:db_postgres][:datadir]}/postgresql.conf"}, "default" => "{[:db_postgres][:datadir]}/postgresql.conf") do
+  template value_for_platform([ "centos", "redhat", "suse" ] => {"default" => "#{node[:db_postgres][:confdir]}/postgresql.conf"}, "default" => "#{node[:db_postgres][:confdir]}/postgresql.conf") do
     source template_source
     owner "postgres"
     group "postgres"
@@ -268,19 +268,6 @@ action :install_server do
     cookbook 'db_postgres'
   end
   
-  # Setup pg_hba.conf
-  pg_template_source = "pg_hba.conf.erb"  
-  
-    template value_for_platform([ "centos", "redhat", "suse" ] => {"default" => "#{node[:db_postgres][:datadir]}/pg_hba.conf"}, "default" => "#{node[:db_postgres][:datadir]}/pg_hba.conf") do
-    source pg_template_source
-    owner "postgres"
-    group "postgres"
-    mode "0644"
-    variables(
-      :server_id => mycnf_uuid
-    )
-    cookbook 'db_postgres'
-  end
 
   # == Setup PostgreSQL user limits
   #

@@ -9,6 +9,7 @@ depends "rs_utils"
 depends "block_device"
 depends "sys_firewall"
 depends "db_mysql"
+depends "db_postgres"
 
 
 recipe "db::default", "Adds the database:active=true tag to your server which identifies it as an database server. The tag is used by application servers to identify active databases. It also loads the required 'db' resources."
@@ -75,6 +76,13 @@ attribute "db/fqdn",
   :display_name => "Database Master FQDN",
   :description => "The fully qualified domain name for the Master Database.",
   :required => true,
+  :recipes => [ "db::default" ]
+
+attribute "db/provider",
+  :display_name => "Database Provider",
+  :description => "The database provider for the Master Database.",
+  :default => "db_mysql",
+  :choice => [ "db_mysql", "db_postgres" ],
   :recipes => [ "db::default" ]
 
 attribute "db/admin/user",
