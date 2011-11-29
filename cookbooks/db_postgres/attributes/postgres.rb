@@ -36,8 +36,8 @@ set_unless[:db_postgres][:admin_role] = "admins"
 set_unless[:db_postgres][:user_role] = "users"
 
 set_unless[:db_postgres][:tmpdir] = "/tmp"
-set_unless[:db_postgres][:datadir] = "/var/lib/pgsql/#{node[:postgresql][:version]}/data"
-set_unless[:db_postgres][:confdir] = "/var/lib/pgsql/#{node[:postgresql][:version]}/data"
+set_unless[:db_postgres][:datadir] = "/var/lib/pgsql/9.1/data"
+set_unless[:db_postgres][:confdir] = "/var/lib/pgsql/9.1/data"
 set_unless[:db_postgres][:ident_file] = ""
 set_unless[:db_postgres][:pid_file] = ""
 set_unless[:db_postgres][:datadir_relocate] = "/mnt/storage"
@@ -55,15 +55,15 @@ set_unless[:db_postgres][:dump][:prefix] = ""
 case platform
 when "redhat","centos","fedora","suse"
   set[:db_postgres][:socket] = "/var/run/postgresql"
-  set_unless[:db_postgres][:basedir] = "/var/lib/pgsql/#{node[:postgresql][:version]}"
+  set_unless[:db_postgres][:basedir] = "/var/lib/pgsql/9.1"
   set_unless[:db_postgres][:packages_uninstall] = ""
   set_unless[:db_postgres][:packages_install] = ["postgresql91-server", "postgresql91-libs", "postgresql91-devel", "postgresql91" ]
   set_unless[:db_postgres][:log] = ""
   set_unless[:db_postgres][:log_error] = ""
 when "debian","ubuntu"
   set[:db_postgres][:socket] = "/var/run/postgresql"
-  set_unless[:db_postgres][:basedir] = "/var/lib/pgsql/#{node[:postgresql][:version]}"
-  set_unless[:db_postgres][:confdir] = "/etc/postgresql/#{node[:postgresql][:version]}/main"
+  set_unless[:db_postgres][:basedir] = "/var/lib/pgsql/9.1"
+  set_unless[:db_postgres][:confdir] = "/etc/postgresql/9.1/main"
   set_unless[:db_postgres][:packages_uninstall] = ""
   if(platform_version == "10.10" || platform_version == "10.04")
     set_unless[:db_postgres][:packages_install] = ["mysql-server-5.1", ""]
@@ -74,7 +74,7 @@ when "debian","ubuntu"
   set_unless[:db_postgres][:log_error] = "log_error = /var/log/mysql.err"
 else
   set[:db_postgres][:socket] = "/var/run/postgresql"
-  set_unless[:db_postgres][:basedir] = "/var/lib/pgsql/#{node[:postgresql][:version]}"
+  set_unless[:db_postgres][:basedir] = "/var/lib/pgsql/9.1"
   set_unless[:db_postgres][:packages_uninstall] = ""
   set_unless[:db_postgres][:packages_install] = ["postgresql91-server"]
   set_unless[:db_postgres][:log] = "log = /var/log/postgresql"
