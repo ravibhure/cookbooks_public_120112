@@ -21,18 +21,18 @@
 
 module RightScale
   module Database
-    module MySQL
+    module PostgreSQL
       module Helper
-        
-      	require 'timeout'
-      	require 'yaml'
 
-      	SNAPSHOT_POSITION_FILENAME = 'rs_snapshot_position.yaml'
-      	DEFAULT_CRITICAL_TIMEOUT = 7
+        require 'timeout'
+        require 'yaml'
+
+        SNAPSHOT_POSITION_FILENAME = 'rs_snapshot_position.yaml'
+        DEFAULT_CRITICAL_TIMEOUT = 7
 
         def mycnf_uuid
-          node[:db_mysql][:mycnf_uuid] ||= Time.new.to_i
-          node[:db_mysql][:mycnf_uuid]
+          node[:db_postgres][:mycnf_uuid] ||= Time.new.to_i
+          node[:db_postgres][:mycnf_uuid]
         end
 
         def init(new_resource)
@@ -43,65 +43,65 @@ module RightScale
             Chef::Log.warn("Please contact Rightscale to upgrade your account.")
           end
           mount_point = new_resource.name
-          RightScale::Tools::Database.factory(:mysql, new_resource.user, new_resource.password, mount_point, Chef::Log)
+          RightScale::Tools::Database.factory(:postgres, new_resource.user, new_resource.password, mount_point, Chef::Log)
         end
 
-	def self.load_replication_info(node)
-	  loadfile = ::File.join(node[:db][:data_dir], SNAPSHOT_POSITION_FILENAME)
-	  Chef::Log.info "Loading replication information from #{loadfile}"
-	  YAML::load_file(loadfile)
-	end
+        def self.load_replication_info(node)
+          loadfile = ::File.join(node[:db][:data_dir], SNAPSHOT_POSITION_FILENAME)
+          Chef::Log.info "Loading replication information from #{loadfile}"
+          YAML::load_file(loadfile)
+        end
 
-	def self.get_mysql_handle(node, hostname = 'localhost')
-	  info_msg = "MySQL connection to #{hostname}"
-	  info_msg << ": opening NEW MySQL connection."
-	  con = Mysql.new(hostname, node[:db][:admin][:user], node[:db][:admin][:password])
-	  Chef::Log.info info_msg
-	  # this raises if the connection has gone away
-	  con.ping
-	  return con
-	end
+        def self.get_postgres_handle(node, hostname = 'localhost')
+          info_msg = "PostgreSQL connection to #{hostname}"
+          info_msg << ": opening NEW PostgreSQL connection."
+          con = PGconn.connect("", "5432", nil, nil, nil, "postgres", "#{node[:db_postgres][:socket]}")
+          Chef::Log.info info_msg
+          # this raises if the connection has gone away
+          con.ping
+          return con
+        end
 
-	def self.do_query(node, query, hostname = 'localhost', timeout = nil, tries = 1)
-	  require 'mysql'
+        def self.do_query(node, query, #{node[:db_postgres][:socket]}, timeout = nil, tries = 1)
+          require 'pg'
 
-	  while(1) do
-	    begin
-	      info_msg = "Doing SQL Query: HOST=#{hostname}, QUERY=#{query}"
-	      info_msg << ", TIMEOUT=#{timeout}" if timeout
-	      info_msg << ", NUM_TRIES=#{tries}" if tries > 1
-	      Chef::Log.info info_msg
-	      result = nil
-	      if timeout
-		SystemTimer.timeout_after(timeout) do
-		  con = get_mysql_handle(node, hostname)
-		  result = con.query(query)
-		end
-	      else
-		con = get_mysql_handle(node, hostname)
-		result = con.query(query)
-	      end
-	      return result.fetch_hash if result
-	      return result
-	    rescue Timeout::Error => e
-	      Chef::Log.info("Timeout occured during mysql query:#{e}")
-	      tries -= 1
-	      raise "FATAL: retry count reached" if tries == 0
-	    end
-	  end
-	end
+          while(1) do
+            begin
+              info_msg = "Doing SQL Query: HOST=#{hostname}, QUERY=#{query}"
+              info_msg << ", TIMEOUT=#{timeout}" if timeout
+              info_msg << ", NUM_TRIES=#{tries}" if tries > 1
+              Chef::Log.info info_msg
+              result = nil
+              if timeout
+                SystemTimer.timeout_after(timeout) do
+                  con = get_postgres_handle(node, hostname)
+                  result = con.query(query)
+                end
+              else
+                con = get_postgres_handle(node, hostname)
+                result = con.query(query)
+              end
+              return result.fetch_hash if result
+              return result
+            rescue Timeout::Error => e
+              Chef::Log.info("Timeout occured during mysql query:#{e}")
+              tries -= 1
+              raise "FATAL: retry count reached" if tries == 0
+            end
+          end
+        end
 
-        def self.reconfigure_replication(node, hostname = 'localhost', newmaster_host = nil, newmaster_logfile=nil, newmaster_position=nil)
+        def self.reconfigure_replication(node, #{node[:db_postgres][:socket]}, newmaster_host = nil, newmaster_logfile=nil, newmaster_position=nil)
 # These must be passed and not read from a file
-#          master_info = RightScale::Database::MySQL::Helper.load_replication_info(node)
+#          master_info = RightScale::Database::PostgreSQL::Helper.load_replication_info(node)
 #          newmaster_host = master_info['Master_IP']
 #          newmaster_logfile = master_info['File']
 #          newmaster_position = master_info['Position']
           Chef::Log.info "Configuring with #{newmaster_host} logfile #{newmaster_logfile} position #{newmaster_position}"
 
           # legacy did this twice, looks like slave stop can fail once (only throws warning if slave is already stopped)
-          RightScale::Database::MySQL::Helper.do_query(node, "STOP SLAVE", hostname)
-          RightScale::Database::MySQL::Helper.do_query(node, "STOP SLAVE", hostname)
+          RightScale::Database::PostgreSQL::Helper.do_query(node, "STOP SLAVE", hostname)
+          RightScale::Database::PostgreSQL::Helper.do_query(node, "STOP SLAVE", hostname)
 
           cmd = "CHANGE MASTER TO MASTER_HOST='#{newmaster_host}'"
           cmd = cmd +          ", MASTER_LOG_FILE='#{newmaster_logfile}'"
@@ -110,12 +110,12 @@ module RightScale
           # don't log the user and password
           cmd = cmd +          ", MASTER_USER='#{node[:db][:replication][:user]}'"
           cmd = cmd +          ", MASTER_PASSWORD='#{node[:db][:replication][:password]}'"
-          RightScale::Database::MySQL::Helper.do_query(node, cmd, hostname)
+          RightScale::Database::PostgreSQL::Helper.do_query(node, cmd, hostname)
 
-          RightScale::Database::MySQL::Helper.do_query(node, "START SLAVE", hostname)
+          RightScale::Database::PostgreSQL::Helper.do_query(node, "START SLAVE", hostname)
           started=false
           10.times do
-            row = RightScale::Database::MySQL::Helper.do_query(node, "SHOW SLAVE STATUS", hostname)
+            row = RightScale::Database::PostgreSQL::Helper.do_query(node, "SHOW SLAVE STATUS", hostname)
             slave_IO = row["Slave_IO_Running"].strip.downcase
             slave_SQL = row["Slave_SQL_Running"].strip.downcase
             if( slave_IO == "yes" and slave_SQL == "yes" ) then
