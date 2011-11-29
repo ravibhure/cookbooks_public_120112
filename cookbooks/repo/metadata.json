@@ -1,0 +1,30 @@
+{
+  "dependencies": {
+  },
+  "name": "repo",
+  "maintainer_email": "support@rightscale.com",
+  "attributes": {
+  },
+  "license": "All rights reserved",
+  "suggestions": {
+  },
+  "platforms": {
+  },
+  "maintainer": "RightScale, Inc.",
+  "long_description": "= RightScale Repo Cookbook (Beta)\n\n== DESCRIPTION:\n\n== DETAILS:\n\n== REQUIREMENTS:\n\n== SETUP:\n\n== USAGE:\n\n== KNOWN LIMITATIONS:\n",
+  "version": "0.1.0",
+  "recommendations": {
+  },
+  "recipes": {
+  },
+  "groupings": {
+  },
+  "conflicting": {
+  },
+  "replacing": {
+  },
+  "description": "Abstract Repository Cookbook",
+  "providing": {
+    "repo": ">= 0.0.0"
+  }
+}

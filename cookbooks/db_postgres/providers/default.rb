@@ -248,8 +248,8 @@ action :install_server do
 
   # Create the archive directory
   directory "/mnt/archive" do
-    owner "postgresql"
-    group "postgresql"
+    owner "postgres"
+    group "postgres"
     mode 0770
     recursive true
   end
