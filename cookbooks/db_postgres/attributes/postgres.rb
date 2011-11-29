@@ -31,7 +31,7 @@ set_unless[:db_postgres][:previous_master] = nil
 # Optional attributes
 #
 set_unless[:db_postgres][:port] = "5432"
-set_unless[:db_postgres][:version] = "9.1"
+default[:db_postgres][:version] = "9.1"
 set_unless[:db_postgres][:admin_role] = "admins"
 set_unless[:db_postgres][:user_role] = "users"
 
