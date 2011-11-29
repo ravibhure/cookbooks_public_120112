@@ -103,7 +103,7 @@ end
 
 action :post_restore_cleanup do
   @db = init(new_resource)
-  @db.symlink_datadir("/var/lib/pgsql/9.1/data", node[:db][:data_dir])
+  @db.symlink_datadir("/var/lib/pgsql/#{node[:postgresql][:version]}/data", node[:db][:data_dir])
   # TODO: used for replication
   # @db.post_restore_sanity_check
   @db.post_restore_cleanup
@@ -158,10 +158,10 @@ action :install_client do
     p = package "postgresql-client-9" do
       package_name value_for_platform(
         "ubuntu" => {
-          "9.04" => "postgresql-client-9.1",
-          "10.04" => "postgresql-client-9.1"
+          "9.04" => "postgresql-client-#{node[:postgresql][:version]}",
+          "10.04" => "postgresql-client-#{node[:postgresql][:version]}"
         },
-        "default" => 'postgresql-client-9.1'
+        "default" => 'postgresql-client-#{node[:postgresql][:version]}'
       )
       action :nothing
     end
@@ -184,7 +184,7 @@ action :install_client do
   # Also installs in compile phase
   #
   r = execute "install postgresql gem" do
-    command "/opt/rightscale/sandbox/bin/gem install pg --no-rdoc --no-ri -- --build-flags --with-pg-config=/usr/pgsql-9.1/bin/pg_config"
+    command "/opt/rightscale/sandbox/bin/gem install pg --no-rdoc --no-ri -- --build-flags --with-pg-config=/usr/pgsql-#{node[:postgresql][:version]}/bin/pg_config"
   end
   r.run_action(:run)
 
@@ -210,15 +210,15 @@ action :install_server do
      end
   end unless node[:db_postgres][:packages_uninstall] == ""
 
-  service "postgresql-9.1" do
-    #service_name value_for_platform([ "centos", "redhat", "suse" ] => {"default" => "postgresql-9.1"}, "default" => "postgresql-9.1")
+  service "postgresql-#{node[:postgresql][:version]}" do
+    #service_name value_for_platform([ "centos", "redhat", "suse" ] => {"default" => "postgresql-#{node[:postgresql][:version]}"}, "default" => "postgresql-#{node[:postgresql][:version]}")
     supports :status => true, :restart => true, :reload => true
     action :stop
   end
 
   # Initialize PostgreSQL server and create system tables
   touchfile = ::File.expand_path "~/.postgresql_installed"
-  execute "/etc/init.d/postgresql-9.1 initdb" do
+  execute "/etc/init.d/postgresql-#{node[:postgresql][:version]} initdb" do
     creates touchfile
   end
 
@@ -226,7 +226,7 @@ action :install_server do
   #
 
   # Stop PostgreSQL
-  service "postgresql-9.1" do
+  service "postgresql-#{node[:postgresql][:version]}" do
     supports :status => true, :restart => true, :reload => true
     action :stop
   end
@@ -306,7 +306,7 @@ action :install_server do
 
   # == Start PostgreSQL
   #
-  service "postgresql-9.1" do
+  service "postgresql-#{node[:postgresql][:version]}" do
     supports :status => true, :restart => true, :reload => true
     action :start
   end

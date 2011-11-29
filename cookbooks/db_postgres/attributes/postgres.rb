@@ -31,12 +31,13 @@ set_unless[:db_postgres][:previous_master] = nil
 # Optional attributes
 #
 set_unless[:db_postgres][:port] = "5432"
-
-#set_unless[:db_postgres][:log_bin_enabled] = true # Don't know wheather it is required or not?
-#set_unless[:db_postgres][:log_bin] = "/mnt/mysql-binlogs/mysql-bin" # Don't know wheather it is required or not?
+set_unless[:postgresql][:version] = "9.1"
 
 set_unless[:db_postgres][:tmpdir] = "/tmp"
-set_unless[:db_postgres][:datadir] = "/var/lib/pgsql/9.1/data"
+set_unless[:db_postgres][:datadir] = "/var/lib/pgsql/#{node[:postgresql][:version]}/data"
+set_unless[:db_postgres][:confdir] = "/var/lib/pgsql/#{node[:postgresql][:version]}/data"
+set_unless[:db_postgres][:ident_file] = ""
+set_unless[:db_postgres][:pid_file] = ""
 set_unless[:db_postgres][:datadir_relocate] = "/mnt/storage"
 set_unless[:db_postgres][:bind_address] = cloud[:private_ips][0]
 
@@ -52,25 +53,26 @@ set_unless[:db_postgres][:dump][:prefix] = ""
 case platform
 when "redhat","centos","fedora","suse"
         set[:db_postgres][:socket] = "/var/run/postgresql"
-  set_unless[:db_postgres][:basedir] = "/var/lib/pgsql/9.1"
+  set_unless[:db_postgres][:basedir] = "/var/lib/pgsql/#{node[:postgresql][:version]}"
   set_unless[:db_postgres][:packages_uninstall] = ""
   set_unless[:db_postgres][:packages_install] = ["postgresql91-server", "postgresql91-libs", "postgresql91-devel", "postgresql91" ]
   set_unless[:db_postgres][:log] = ""
   set_unless[:db_postgres][:log_error] = ""
 when "debian","ubuntu"
   set[:db_postgres][:socket] = "/var/run/postgresql"
-  set_unless[:db_postgres][:basedir] = "/var/lib/pgsql/9.1"
-  set_unless[:db_postgres][:packages_uninstall] = "apparmor"
+  set_unless[:db_postgres][:basedir] = "/var/lib/pgsql/#{node[:postgresql][:version]}"
+  set_unless[:db_postgres][:confdir] = "/etc/postgresql/#{node[:postgresql][:version]}/main"
+  set_unless[:db_postgres][:packages_uninstall] = ""
   if(platform_version == "10.10" || platform_version == "10.04")
-    set_unless[:db_postgres][:packages_install] = ["mysql-server-5.1", "tofrodos"]
+    set_unless[:db_postgres][:packages_install] = ["mysql-server-5.1", ""]
   else
-    set_unless[:db_postgres][:packages_install] = ["mysql-server-5.0", "tofrodos"]
+    set_unless[:db_postgres][:packages_install] = ["mysql-server-5.0", ""]
   end
   set_unless[:db_postgres][:log] = "log = /var/log/mysql.log"
   set_unless[:db_postgres][:log_error] = "log_error = /var/log/mysql.err"
 else
   set[:db_postgres][:socket] = "/var/run/postgresql"
-  set_unless[:db_postgres][:basedir] = "/var/lib/pgsql/9.1"
+  set_unless[:db_postgres][:basedir] = "/var/lib/pgsql/#{node[:postgresql][:version]}"
   set_unless[:db_postgres][:packages_uninstall] = ""
   set_unless[:db_postgres][:packages_install] = ["postgresql91-server"]
   set_unless[:db_postgres][:log] = "log = /var/log/postgresql"
