@@ -128,7 +128,7 @@
       "description": "Location for secondary backups. Used by db::do_secondary_backup and db::do_secondary_restore to backup to persistent storage outside of the current cloud. For example, you can specify the name of an AWS S3 bucket or Rackspace CloudFiles container."
     },
     "db/provider": {
-      "required": "required",
+      "required": "optional",
       "calculated": false,
       "choice": [
         "db_mysql",
