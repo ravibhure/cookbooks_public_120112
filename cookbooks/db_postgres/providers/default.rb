@@ -245,6 +245,14 @@ action :install_server do
   end
 
 
+  # Create the Socket directory
+  directory "/var/run/postgresql" do
+    owner "postgres"
+    group "postgres"
+    mode 0770
+    recursive true
+  end
+
   # Create the archive directory
   directory "/mnt/archive" do
     owner "postgres"
