@@ -57,7 +57,6 @@ when "redhat","centos","fedora","suse"
   set[:db_postgres][:socket] = "/var/run/postgresql"
   set_unless[:db_postgres][:basedir] = "/var/lib/pgsql/9.1"
   set_unless[:db_postgres][:packages_uninstall] = ""
-  set_unless[:db_postgres][:packages_client] = ["postgresql91-devel", "postgresql91-libs", "postgresql91", "postgresql91-contrib" ] 
   set_unless[:db_postgres][:packages_install] = ["postgresql91-server", "postgresql91-libs", "postgresql91-devel", "postgresql91", "postgresql91-contrib" ]
   set_unless[:db_postgres][:log] = ""
   set_unless[:db_postgres][:log_error] = ""
