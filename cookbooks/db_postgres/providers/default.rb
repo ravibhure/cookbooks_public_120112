@@ -141,15 +141,10 @@ action :install_client do
     reporpm = ::File.join(::File.dirname(__FILE__), "..", "files", "centos", "pgdg-centos91-9.1-4.noarch.rpm")
     `rpm --install #{reporpm}`
 
-    # Packages from cookbook files as attachment for PostgreSQL 9.1.1
-    packages = ["postgresql91-devel", "postgresql91-libs", "postgresql91", "postgresql91-contrib"  ]
-    #packages = ::File.join(::File.dirname(__FILE__), "..", "files", "centos", "#{packages}")
-    Chef::Log.info("Packages to install: #{packages.join(",")}")
-    packages.each do |p|
-      r = package p do
-        action :nothing
-      end
-      r.run_action(:install)
+  # == Install PostgreSQL 9.1 client and other packages
+  #
+    node[:db_postgres][:[:db_postgres][:packages_client]].each do |p|
+      package p
     end
 
   else
