@@ -124,7 +124,7 @@ action :set_privileges do
   priv_username = new_resource.privilege_username
   priv_password = new_resource.privilege_password
   priv_database = new_resource.privilege_database
-  db_mysql_set_privileges "setup db privileges" do
+  db_postgres_set_privileges "setup db privileges" do
     preset priv
     username priv_username
     password priv_password
@@ -246,7 +246,8 @@ action :install_server do
 
 
   # Create the Socket directory
-  directory "/var/run/postgresql" do
+  # directory "/var/run/postgresql" do
+  directory "#{node[:db_postgres][:socket]}" do
     owner "postgres"
     group "postgres"
     mode 0770
