@@ -38,10 +38,10 @@ r.run_action(:run)
 
 # Remove existing version of rest-client
 # Upgrade for gem does not seem to work so using two step - removal and install.
-u = execute "uninstall rest-client gem" do
-  command "/opt/rightscale/sandbox/bin/gem uninstall rest-client -v 1.6.3"
-end
-u.run_action(:run)
+#u = execute "uninstall rest-client gem" do
+#  command "/opt/rightscale/sandbox/bin/gem uninstall rest-client -v 1.6.3"
+#end
+#u.run_action(:run)
 
 #t = execute "install taps gem" do
 #  command "/opt/rightscale/sandbox/bin/gem install taps --no-rdoc --no-ri"

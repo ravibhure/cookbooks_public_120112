@@ -143,7 +143,7 @@ action :install_client do
 
   # == Install PostgreSQL 9.1 client and other packages
   #
-    node[:db_postgres][:[:db_postgres][:packages_client]].each do |p|
+    node[:db_postgres][:packages_client].each do |p|
       package p
     end
 
