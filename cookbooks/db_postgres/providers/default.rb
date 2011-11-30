@@ -144,7 +144,9 @@ action :install_client do
   # == Install PostgreSQL 9.1 client and other packages
   #
     node[:db_postgres][:packages_client].each do |p|
-      package p
+      package p do
+	action :install
+      end
     end
 
   else
@@ -179,7 +181,7 @@ action :install_client do
   # Also installs in compile phase
   #
   r = execute "install pg gem" do
-    command "/opt/rightscale/sandbox/bin/gem install pg --no-rdoc --no-ri -- --with-pg-config=/usr/pgsql-9.1/bin/pg_config"
+    command "/opt/rightscale/sandbox/bin/gem install pg -- --with-pg-config=/usr/pgsql-9.1/bin/pg_config"
   end
   r.run_action(:run)
 
