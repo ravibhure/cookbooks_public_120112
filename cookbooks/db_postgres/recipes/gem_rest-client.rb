@@ -25,12 +25,6 @@
 
 rs_utils_marker :begin
 
-# Remove existing version of rest-client
-# Upgrade for gem does not seem to work so using two step - removal and install.
-u = execute "uninstall rest-client gem" do
-  command "/opt/rightscale/sandbox/bin/gem uninstall rest-client"
-end
-u.run_action(:run)
 
 # == Install rest-client gem
 #
@@ -42,10 +36,17 @@ r = execute "install rest-client gem" do
 end
 r.run_action(:run)
 
-t = execute "install taps gem" do
-  command "/opt/rightscale/sandbox/bin/gem install taps --no-rdoc --no-ri"
+# Remove existing version of rest-client
+# Upgrade for gem does not seem to work so using two step - removal and install.
+u = execute "uninstall rest-client gem" do
+  command "/opt/rightscale/sandbox/bin/gem uninstall rest-client -v 1.6.3"
 end
-t.run_action(:run)
+u.run_action(:run)
+
+#t = execute "install taps gem" do
+#  command "/opt/rightscale/sandbox/bin/gem install taps --no-rdoc --no-ri"
+#end
+#t.run_action(:run)
 
 Gem.clear_paths
 log "Gem reload forced with Gem.clear_paths"
