@@ -42,8 +42,10 @@ r = execute "install rest-client gem" do
 end
 r.run_action(:run)
 
-
-#  execute "/opt/rightscale/sandbox/bin/gem install taps --no-rdoc --no-ri"
+t = execute "install taps gem" do
+  commands "/opt/rightscale/sandbox/bin/gem install taps --no-rdoc --no-ri"
+end
+t.run_action(:run)
 
 Gem.clear_paths
 log "Gem reload forced with Gem.clear_paths"
