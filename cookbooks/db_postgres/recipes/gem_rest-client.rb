@@ -27,7 +27,10 @@ rs_utils_marker :begin
 
 # Remove existing version of rest-client
 # Upgrade for gem does not seem to work so using two step - removal and install.
-execute "/opt/rightscale/sandbox/bin/gem uninstall rest-client"
+u = execute "uninstall rest-client gem" do
+  command "/opt/rightscale/sandbox/bin/gem uninstall rest-client"
+end
+u.run_action(:run)
 
 # == Install rest-client gem
 #
