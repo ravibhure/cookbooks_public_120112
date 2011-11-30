@@ -30,13 +30,35 @@ define :db_postgres_set_privileges, :preset => "administrator", :username => nil
   password = params[:password]
   db_name = "*.*"
   db_name = "#{params[:db_name]}.*" if params[:db_name]
+
+# Setting postgres user password for connection
+# randomly generate postgres password
+node.set_unless[:postgresql][:password][:postgres] = secure_password
+  bash "assign-postgres-password" do
+    user 'postgres'
+    code <<-EOH
+  echo "ALTER ROLE postgres ENCRYPTED PASSWORD '#{node[:postgresql][:password][:postgres]}';" | psql
+    EOH
+    not_if do
+      begin
+        require 'rubygems'
+        Gem.clear_paths
+        require 'pg'
+        conn = PGconn.connect("localhost", 5432, nil, nil, nil, "postgres", node['postgresql']['password']['postgres'])
+      rescue PGError
+        false
+      end
+    end
+    action :run
+  end
   
   ruby_block "set admin credentials" do
     block do
       require 'rubygems'
       require 'pg'
 
-      con = PGconn.connect("", "5432", nil, nil, nil, "postgres", "#{node[:db_postgres][:socket]}")
+      #con = PGconn.connect("", "5432", nil, nil, nil, "postgres", "#{node[:db_postgres][:socket]}")
+	conn = PGconn.connect("localhost", 5432, nil, nil, nil, "postgres", node['postgresql']['password']['postgres'])
 
       # Now that we have a Postgresql object, let's santize our inputs
       username = con.escape_string(username)
