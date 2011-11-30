@@ -24,14 +24,23 @@
 # WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
 rs_utils_marker :begin
+
+# Remove existing version of rest-client
+# Upgrade for gem does not seem to work so using two step - removal and install.
+execute "/opt/rightscale/sandbox/bin/gem uninstall rest-client"
+
 # == Install rest-client gem
 #
 # Also installs in compile phase
 #
+
 r = execute "install rest-client gem" do
   command "/opt/rightscale/sandbox/bin/gem install rest-client --no-rdoc --no-ri"
 end
 r.run_action(:run)
+
+
+#  execute "/opt/rightscale/sandbox/bin/gem install taps --no-rdoc --no-ri"
 
 Gem.clear_paths
 log "Gem reload forced with Gem.clear_paths"

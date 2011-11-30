@@ -134,13 +134,13 @@
         "db_mysql",
         "db_postgres"
       ],
-      "default": "db_mysql",
+      "default": "db_postgres",
       "type": "string",
       "recipes": [
         "db::default"
       ],
       "display_name": "Database Provider",
-      "description": "The database provider for the Master Database."
+      "description": "The database provider for the Master Database. (Ex: db_postgres)"
     },
     "db/backup/master/minute": {
       "required": "optional",
