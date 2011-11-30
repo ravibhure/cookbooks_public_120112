@@ -43,7 +43,7 @@ end
 r.run_action(:run)
 
 t = execute "install taps gem" do
-  commands "/opt/rightscale/sandbox/bin/gem install taps --no-rdoc --no-ri"
+  command "/opt/rightscale/sandbox/bin/gem install taps --no-rdoc --no-ri"
 end
 t.run_action(:run)
 
