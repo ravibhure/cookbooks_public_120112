@@ -16,6 +16,7 @@ provides "db_postgres_gzipfile_backup(db_name, file_path)"
 provides "db_postgres_gzipfile_restore(db_name, file_path)"
 
 recipe  "db_postgres::default", "Runs the client 'db::install_server' recipes."
+recipe  "db_postgres::gem_rest-client", "Runs the rest-client 'db_postgres::gem_rest-client' recipes."
 
 attribute "db_postgres",
   :display_name => "General Database Options",
