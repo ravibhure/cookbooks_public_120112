@@ -138,18 +138,19 @@ action :install_client do
   if node[:platform] == "centos"
   
   # Install PostgreSQL GPG Key (http://yum.postgresql.org/9.1/redhat/rhel-5-(arch)/pgdg-centos91-9.1-4.noarch.rpm)
-#    reporpm = ::File.join(::File.dirname(__FILE__), "..", "files", "centos", "pgdg-centos91-9.1-4.noarch.rpm")
+    reporpm = ::File.join(::File.dirname(__FILE__), "..", "files", "centos", "pgdg-centos91-9.1-4.noarch.rpm")
     #`rpm --install -hv #{reporpm}`
-#    pg = execute "install pg_repo rpm" do
-#      command "rpm -ivh --force #{reporpm}"
-#    end
-#    pg.run_action(:run)    
+    pg = execute "install pg_repo rpm" do
+      command "rpm -ivh --force #{reporpm}"
+    end
+    pg.run_action(:run)    
 
     # Packages from postgresql yum repository for PostgreSQL 9.1.1
     packages = ["postgresql91-devel", "postgresql91-libs", "postgresql91", "postgresql91-contrib" ]
     Chef::Log.info("Packages to install: #{packages.join(",")}")
     packages.each do |p|
       r = package p do
+	version "9.1.1-1PGDG.rhel5"	
         action :nothing
       end
       r.run_action(:install)

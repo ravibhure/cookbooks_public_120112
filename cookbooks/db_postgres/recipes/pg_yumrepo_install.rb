@@ -25,18 +25,14 @@
 
 rs_utils_marker :begin
 
-# == Install pg yumrepo
-#
-# Also installs in compile phase
-#
 # Install PostgreSQL 9.1.1 package(s)
 if node[:platform] == "centos"
 
 # Install PostgreSQL GPG Key (http://yum.postgresql.org/9.1/redhat/rhel-5-(arch)/pgdg-centos91-9.1-4.noarch.rpm)
   reporpm = ::File.join(::File.dirname(__FILE__), "..", "files", "centos", "pgdg-centos91-9.1-4.noarch.rpm")
-    pg = execute "install pg_repo rpm" do
-      command "rpm -ivh --force #{reporpm}"
+    r = execute "install pgdg-centos91-9.1-4 rpm" do
+      command "rpm -ivh #{reporpm}"
     end
-    pg.run_action(:run)
-    
+    r.run_action(:run)
+
 rs_utils_marker :end
