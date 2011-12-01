@@ -137,7 +137,7 @@ action :install_client do
   # Install PostgreSQL 9.1.1 package(s)
   if node[:platform] == "centos"
   arch = node[:kernel][:machine]
-  arch = "i386" if arch == "x86_64"
+  arch = "x86_64" if arch == "i386"
 
   # Install PostgreSQL GPG Key (http://yum.postgresql.org/9.1/redhat/rhel-5-(arch)/pgdg-centos91-9.1-4.noarch.rpm)
     reporpm = ::File.join(::File.dirname(__FILE__), "..", "files", "centos", "pgdg-centos91-9.1-4.noarch.rpm")
@@ -205,18 +205,18 @@ action :install_server do
 
   if node[:platform] == "centos"
   arch = node[:kernel][:machine]
-  arch = "i386" if arch == "x86_64"
-
-
-  # == Install PostgreSQL 9.1 and other packages
-  #
-#  node[:db_postgres][:packages_install].each do |p|
-#    package p
-#  end unless node[:db_postgres][:packages_install] == ""
+  arch = "x86_64" if arch == "i386"
 
   # Install PostgreSQL server rpm
     pgdevelrpm = ::File.join(::File.dirname(__FILE__), "..", "files", "centos", "postgresql91-server-9.1.1-1PGDG.rhel5.#{arch}.rpm")
     `yum -y localinstall #{pgdevelrpm}`
+
+  # == Install PostgreSQL 9.1 and other packages
+  #
+  node[:db_postgres][:packages_install].each do |p|
+    package p
+  end unless node[:db_postgres][:packages_install] == ""
+
 
   # Uninstall other packages we don't
   node[:db_postgres][:packages_uninstall].each do |p|
