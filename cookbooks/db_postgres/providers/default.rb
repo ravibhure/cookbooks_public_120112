@@ -143,20 +143,9 @@ action :install_client do
     reporpm = ::File.join(::File.dirname(__FILE__), "..", "files", "centos", "pgdg-centos91-9.1-4.noarch.rpm")
     `rpm -ihv #{reporpm}`
 
-    # Packages from postgresql yum repository for PostgreSQL 9.1.1
-#    packages = ["postgresql91-devel", "postgresql91-libs", "postgresql91", "postgresql91-contrib" ]
-#    Chef::Log.info("Packages to install: #{packages.join(",")}")
-#    packages.each do |p|
-#      r = package p do
-#        action :nothing
-#      end
-#      r.run_action(:install)
-#    end
-
   # Install PostgreSQL client rpm
     pgdevelrpm = ::File.join(::File.dirname(__FILE__), "..", "files", "centos", "postgresql91-devel-9.1.1-1PGDG.rhel5.#{arch}.rpm")
     `yum -y localinstall #{pgdevelrpm}`
-
 
   else
 
@@ -203,7 +192,6 @@ action :install_server do
   # PostgreSQL server depends on PostgreSQL client
   action_install_client
 
-  if node[:platform] == "centos"
   arch = node[:kernel][:machine]
   arch = "x86_64" if arch == "i386"
 
@@ -216,7 +204,6 @@ action :install_server do
   node[:db_postgres][:packages_install].each do |p|
     package p
   end unless node[:db_postgres][:packages_install] == ""
-
 
   # Uninstall other packages we don't
   node[:db_postgres][:packages_uninstall].each do |p|
