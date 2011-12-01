@@ -196,8 +196,12 @@ action :install_server do
   arch = "x86_64" if arch == "i386"
 
   # Install PostgreSQL server rpm
-    pgserverrpm = ::File.join(::File.dirname(__FILE__), "..", "files", "centos", "postgresql91-server-9.1.1-1PGDG.rhel5.#{arch}.rpm") + ::File.join(::File.dirname(__FILE__), "..", "files", "centos", "postgresql91-contrib-9.1.1-1PGDG.rhel5.#{arch}.rpm")
+    pgserverrpm = ::File.join(::File.dirname(__FILE__), "..", "files", "centos", "postgresql91-server-9.1.1-1PGDG.rhel5.#{arch}.rpm") 
     `yum -y localinstall #{pgserverrpm}`
+
+  # Install PostgreSQL contrib rpm
+     pgcontribpkg =  ::File.join(::File.dirname(__FILE__), "..", "files", "centos", "postgresql91-contrib-9.1.1-1PGDG.rhel5.#{arch}.rpm")
+    `yum -y localinstall #{pgcontribpkg}`
 
   service "postgresql-9.1" do
     #service_name value_for_platform([ "centos", "redhat", "suse" ] => {"default" => "postgresql-9.1"}, "default" => "postgresql-9.1")
