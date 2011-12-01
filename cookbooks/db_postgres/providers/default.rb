@@ -199,19 +199,6 @@ action :install_server do
     pgdevelrpm = ::File.join(::File.dirname(__FILE__), "..", "files", "centos", "postgresql91-server-9.1.1-1PGDG.rhel5.#{arch}.rpm")
     `yum -y localinstall #{pgdevelrpm}`
 
-  # == Install PostgreSQL 9.1 and other packages
-  #
-  node[:db_postgres][:packages_install].each do |p|
-    package p
-  end unless node[:db_postgres][:packages_install] == ""
-
-  # Uninstall other packages we don't
-  node[:db_postgres][:packages_uninstall].each do |p|
-     package p do
-       action :remove
-     end
-  end unless node[:db_postgres][:packages_uninstall] == ""
-
   service "postgresql-9.1" do
     #service_name value_for_platform([ "centos", "redhat", "suse" ] => {"default" => "postgresql-9.1"}, "default" => "postgresql-9.1")
     supports :status => true, :restart => true, :reload => true
