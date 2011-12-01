@@ -160,7 +160,7 @@ action :install_client do
 
   # Install PostgreSQL client rpm
     pgdevelrpm = ::File.join(::File.dirname(__FILE__), "..", "files", "centos", "postgresql91-devel-9.1.1-1PGDG.rhel5.#{arch}.rpm")
-    `yum localinstall #{pgdevelrpm}`
+    `yum -y localinstall #{pgdevelrpm}`
 
 
   else
