@@ -139,23 +139,14 @@ action :install_client do
   arch = node[:kernel][:machine]
   arch = "i386" if arch == "x86_64"
 
-
-  # Install PostgreSQL yum repo
-    template "/etc/yum.repos.d/pgdg-91-centos.repo" do
-      source "pgdg-91-centos.repo.erb"
-      cookbook 'db_postgres'
-    end
-
-  
   # Install PostgreSQL GPG Key (http://yum.postgresql.org/9.1/redhat/rhel-5-(arch)/pgdg-centos91-9.1-4.noarch.rpm)
-#    reporpm = ::File.join(::File.dirname(__FILE__), "..", "files", "centos", "pgdg-centos91-9.1-4.noarch.rpm")
-    #`rpm --install -hv #{reporpm}`
+    reporpm = ::File.join(::File.dirname(__FILE__), "..", "files", "centos", "pgdg-centos91-9.1-4.noarch.rpm")
+    `rpm -ihv #{reporpm}`
+	
 #    pg = execute "install pg_repo rpm" do
 #      command "rpm -ivh --force #{reporpm}"
 #    end
 #    pg.run_action(:run)    
-    gpgkey = ::File.join(::File.dirname(__FILE__), "..", "files", "centos", "pgsql_pubkey.asc")
-	`rpm --import #{gpgkey}`
 
     # Packages from postgresql yum repository for PostgreSQL 9.1.1
 #    packages = ["postgresql91-devel", "postgresql91-libs", "postgresql91", "postgresql91-contrib" ]
