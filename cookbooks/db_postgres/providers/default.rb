@@ -136,6 +136,9 @@ action :install_client do
 
   # Install PostgreSQL 9.1.1 package(s)
   if node[:platform] == "centos"
+  arch = node[:kernel][:machine]
+  arch = "i386" if arch == "x86_64"
+
 
   # Install PostgreSQL yum repo
     template "/etc/yum.repos.d/pgdg-91-centos.repo" do
@@ -155,14 +158,19 @@ action :install_client do
 	`rpm --import #{gpgkey}`
 
     # Packages from postgresql yum repository for PostgreSQL 9.1.1
-    packages = ["postgresql91-devel", "postgresql91-libs", "postgresql91", "postgresql91-contrib" ]
-    Chef::Log.info("Packages to install: #{packages.join(",")}")
-    packages.each do |p|
-      r = package p do
-        action :nothing
-      end
-      r.run_action(:install)
-    end
+#    packages = ["postgresql91-devel", "postgresql91-libs", "postgresql91", "postgresql91-contrib" ]
+#    Chef::Log.info("Packages to install: #{packages.join(",")}")
+#    packages.each do |p|
+#      r = package p do
+#        action :nothing
+#      end
+#      r.run_action(:install)
+#    end
+
+  # Install PostgreSQL client rpm
+    pgdevelrpm = ::File.join(::File.dirname(__FILE__), "..", "files", "centos", "postgresql91-devel-9.1.1-1PGDG.rhel5.#{arch}.rpm")
+    `yum localinstall #{pgdevelrpm}`
+
 
   else
 
