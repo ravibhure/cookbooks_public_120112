@@ -139,7 +139,8 @@ action :install_client do
   
   # Install PostgreSQL GPG Key (http://yum.postgresql.org/9.1/redhat/rhel-5-(arch)/pgdg-centos91-9.1-4.noarch.rpm)
     reporpm = ::File.join(::File.dirname(__FILE__), "..", "files", "centos", "pgdg-centos91-9.1-4.noarch.rpm")
-    `rpm --install #{reporpm}`
+    #`rpm --install -hv #{reporpm}`
+	`rpm -ivh #{reporpm}`
 
     # Packages from postgresql yum repository for PostgreSQL 9.1.1
     packages = ["postgresql91-devel", "postgresql91-libs", "postgresql91", "postgresql91-contrib" ]
