@@ -143,28 +143,10 @@ action :install_client do
     pgreporpm = ::File.join(::File.dirname(__FILE__), "..", "files", "centos", "pgdg-centos91-9.1-4.noarch.rpm")
     `rpm -ihv #{pgreporpm}`
 
- # Need to flush and relead yum cache, Seems Chef not added yum cache it self after add new yum repo.
-  ruby_block "reload-internal-yum-cache" do
-    block do
-    Chef::Provider::Package::Yum::YumCache.instance.reload
-    end
-  action :create
-  end
-  
   # Packages from cookbook files as attachment for PostgreSQL 9.1.1
-  packages = ["postgresql91-devel", "postgresql91-libs", "postgresql91", "postgresql91-contrib"  ]  
-  Chef::Log.info("Packages to install: #{packages.join(",")}")
-  packages.each do |p|
-   r = yum_package p do
-       version "9.1.1-1PGDG.rhel5"
-      action :nothing
-    end
-    r.run_action(:install)
-  end 
-
   # Install PostgreSQL client rpm
-#    pgdevelrpm = ::File.join(::File.dirname(__FILE__), "..", "files", "centos", "postgresql91-devel-9.1.1-1PGDG.rhel5.#{arch}.rpm")
-#    `yum -y localinstall #{pgdevelrpm}`
+    pgdevelrpm = ::File.join(::File.dirname(__FILE__), "..", "files", "centos", "postgresql91-devel-9.1.1-1PGDG.rhel5.#{arch}.rpm")
+    `yum -y localinstall #{pgdevelrpm}`
 
   else
 
@@ -215,21 +197,13 @@ action :install_server do
   arch = "x86_64" if arch == "i386"
 
   # Install PostgreSQL 9.1 server rpm
-#    pgserverrpm = ::File.join(::File.dirname(__FILE__), "..", "files", "centos", "postgresql91-server-9.1.1-1PGDG.rhel5.#{arch}.rpm") 
-#    `yum -y localinstall #{pgserverrpm}`
+    pgserverrpm = ::File.join(::File.dirname(__FILE__), "..", "files", "centos", "postgresql91-server-9.1.1-1PGDG.rhel5.#{arch}.rpm") 
+    `yum -y localinstall #{pgserverrpm}`
 
   # Install PostgreSQL contrib rpm
-#     pgcontribpkg =  ::File.join(::File.dirname(__FILE__), "..", "files", "centos", "postgresql91-contrib-9.1.1-1PGDG.rhel5.#{arch}.rpm")
-#    `yum -y localinstall #{pgcontribpkg}`
+     pgcontribpkg =  ::File.join(::File.dirname(__FILE__), "..", "files", "centos", "postgresql91-contrib-9.1.1-1PGDG.rhel5.#{arch}.rpm")
+    `yum -y localinstall #{pgcontribpkg}`
 
-  # Install PostgreSQL 9.1 server rpm
-  node[:db_postgres][:packages_install].each do |p|
-    r = yum_package p do
-      version "9.1.1-1PGDG.rhel5"
-      action :nothing
-    end
-    r.run_action(:install)
-  end
 
   service "postgresql-9.1" do
     #service_name value_for_platform([ "centos", "redhat", "suse" ] => {"default" => "postgresql-9.1"}, "default" => "postgresql-9.1")
