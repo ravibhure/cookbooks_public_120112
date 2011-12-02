@@ -27,27 +27,3 @@ attribute "db_postgres/server_usage",
   :choice => ["shared", "dedicated"],
   :default => "dedicated"
 
-
-attribute "db_postgres/dump/storage_account_id",
-  :display_name => "Storage Account Id",
-  :description => "In order to write the dump file to the specified cloud storage location, you will need to provide cloud authentication credentials. For Amazon S3, use AWS_ACCESS_KEY_ID. For Rackspace Cloud Files, use your Rackspace login Username.",
-  :required => false,
-  :recipes => [ "db_postgres::do_dump_import", "db_postgres::do_dump_export", "db_postgres::setup_continuous_export"  ]
-
-attribute "db_postgres/dump/storage_account_secret",
-  :display_name => "Storage Account Secret",
-  :description => "In order to write the dump file to the specified cloud storage location, you will need to provide cloud authentication credentials. For Amazon S3, use AWS_SECRET_ACCESS_KEY. For Rackspace Cloud Files, use your Rackspace account API Key.",
-  :required => false,
-  :recipes => [ "db_postgres::do_dump_import", "db_postgres::do_dump_export", "db_postgres::setup_continuous_export"  ]
-
-attribute "db_postgres/dump/container",
-  :display_name => "Container",
-  :description => "The cloud storage location where the PostgreSQL dump file will be saved to or restored from. For Amazon S3, use the bucket name.  For Rackspace Cloud Files, use the container name.",
-  :required => false,
-  :recipes => [ "db_postgres::do_dump_import", "db_postgres::do_dump_export", "db_postgres::setup_continuous_export"  ]
-
-attribute "db_postgres/dump/prefix",
-  :display_name => "Prefix",
-  :description => "The prefix that will be used to name/locate the backup of a particular PostgreSQL database.  Defines the prefix of the PostgreSQL dump filename that will be used to name the backup database dumpfile along with a timestamp.",
-  :required => false,
-  :recipes => [ "db_postgres::do_dump_import", "db_postgres::do_dump_export", "db_postgres::setup_continuous_export"  ]  

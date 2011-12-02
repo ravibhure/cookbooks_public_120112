@@ -19,8 +19,6 @@
 # OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION
 # WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
-include RightScale::Database::PostgreSQL::Helper
-
 action :stop do
   @db = init(new_resource)
   @db.stop
@@ -55,81 +53,6 @@ end
 action :reset do
   @db = init(new_resource)
   @db.reset
-end
-
-action :firewall_update_request do
-  sys_firewall "Request database open port 5432 (PostgreSQL) to this server" do
-    machine_tag new_resource.machine_tag
-    port 5432 
-    enable new_resource.enable
-    ip_addr new_resource.ip_addr
-    action :update_request
-  end
-end
-
-action :firewall_update do
-  sys_firewall "Request database open port 5432 (PostgreSQL) to this server" do
-    machine_tag new_resource.machine_tag
-    port 5432 
-    enable new_resource.enable
-    action :update
-  end
-end
-
-action :write_backup_info do
-  masterstatus = Hash.new
-  masterstatus = RightScale::Database::PostgreSQL::Helper.do_query(node, 'select pg_last_xlog_receive_location()')
-  masterstatus['Master_IP'] = node[:db][:current_master_ip]
-  masterstatus['Master_instance_uuid'] = node[:db][:current_master_uuid]
-  slavestatus = RightScale::Database::PostgreSQL::Helper.do_query(node, 'select pg_last_xlog_receive_location()')
-  slavestatus ||= Hash.new
-  if node[:db][:this_is_master]
-    Chef::Log.info "Backing up Master info"
-  else
-    Chef::Log.info "Backing up slave replication status"
-    masterstatus['File'] = slavestatus['Relay_Master_Log_File']
-    masterstatus['Position'] = slavestatus['Exec_Master_Log_Pos']
-  end
-  Chef::Log.info "Saving master info...:\n#{masterstatus.to_yaml}"
-  ::File.open(::File.join(node[:db][:data_dir], RightScale::Database::PostgreSQL::Helper::SNAPSHOT_POSITION_FILENAME), ::File::CREAT|::File::TRUNC|::File::RDWR) do |out|
-    YAML.dump(masterstatus, out)
-  end
-end
-
-action :pre_restore_check do
-  @db = init(new_resource)
-  @db.pre_restore_sanity_check
-end
-
-action :post_restore_cleanup do
-  @db = init(new_resource)
-  @db.symlink_datadir("/var/lib/pgsql/9.1/data", node[:db][:data_dir])
-  # TODO: used for replication
-  # @db.post_restore_sanity_check
-  @db.post_restore_cleanup
-end
-
-action :pre_backup_check do
-  @db = init(new_resource)
-  @db.pre_backup_check
-end
-
-action :post_backup_cleanup do
-  @db = init(new_resource)
-  @db.post_backup_steps
-end
-
-action :set_privileges do
-  priv = new_resource.privilege
-  priv_username = new_resource.privilege_username
-  priv_password = new_resource.privilege_password
-  priv_database = new_resource.privilege_database
-  db_postgres_set_privileges "setup db privileges" do
-    preset priv
-    username priv_username
-    password priv_password
-    database priv_database
-  end
 end
 
 action :install_client do
@@ -227,20 +150,6 @@ action :install_server do
   end
 
 
-  # moves postgresql default db to storage location
-  touchfile = ::File.expand_path "~/.postgresql_dbmoved"
-  ruby_block "clean innodb logfiles" do
-    not_if { ::File.exists?(touchfile) }
-    block do
-      require 'fileutils'
-     # remove_files = ::Dir.glob(::File.join(node[:db_postgres][:basedir], 'pgstartup.log*')) + ::Dir.glob(::File.join(node[:db_postgres][:basedir], 'ibdata*'))
-      remove_files = ::Dir.glob(::File.join(node[:db_postgres][:basedir], 'pgstartup.log*')) 
-      FileUtils.rm_rf(remove_files)
-      ::File.open(touchfile,'a'){}
-    end
-  end
-
-
   # Create the Socket directory
   # directory "/var/run/postgresql" do
   directory "#{node[:db_postgres][:socket]}" do
@@ -250,13 +159,6 @@ action :install_server do
     recursive true
   end
 
-  # Create the archive directory
-  directory "/mnt/archive" do
-    owner "postgres"
-    group "postgres"
-    mode 0770
-    recursive true
-  end
 
   # Setup postgresql.conf
   template_source = "postgresql.conf.erb"
