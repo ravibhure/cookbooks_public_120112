@@ -156,6 +156,7 @@ action :install_client do
   Chef::Log.info("Packages to install: #{packages.join(",")}")
   packages.each do |p|
    r = yum_package p do
+       version "9.1.1-1PGDG.rhel5"
       action :nothing
     end
     r.run_action(:install)
@@ -223,9 +224,12 @@ action :install_server do
 
   # Install PostgreSQL 9.1 server rpm
   node[:db_postgres][:packages_install].each do |p|
-    yum_package p
-  end unless node[:db_postgres][:packages_install] == ""
-
+    r = yum_package p do
+      version "9.1.1-1PGDG.rhel5"
+      action :nothing
+    end
+    r.run_action(:install)
+  end
 
   service "postgresql-9.1" do
     #service_name value_for_platform([ "centos", "redhat", "suse" ] => {"default" => "postgresql-9.1"}, "default" => "postgresql-9.1")

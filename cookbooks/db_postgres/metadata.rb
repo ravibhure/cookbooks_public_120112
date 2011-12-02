@@ -10,13 +10,7 @@ depends "db"
 depends "rs_utils"
 depends "block_device"
 
-provides "db_postgres_restore(url, branch, user, credentials, file_path, schema_name, tmp_dir)"
-provides "db_postgres_set_privileges(type, username, password, db_name)"
-provides "db_postgres_gzipfile_backup(db_name, file_path)"
-provides "db_postgres_gzipfile_restore(db_name, file_path)"
-
 recipe  "db_postgres::default", "Runs the client 'db::install_server' recipes."
-recipe  "db_postgres::gem_rest-client", "Runs the rest-client 'db_postgres::gem_rest-client' recipes."
 
 attribute "db_postgres",
   :display_name => "General Database Options",
@@ -33,25 +27,6 @@ attribute "db_postgres/server_usage",
   :choice => ["shared", "dedicated"],
   :default => "dedicated"
 
-# == Import/export attributes
-# TODO: these are used by the LAPP template and should be moved into the LAPP cookbook
-#
-attribute "db_postgres/dump",
-  :display_name => "Import/Export settings for PostgreSQL dump file management.",
-  :type => "hash"
-
-attribute "db_postgres/dump/schema_name",
-  :display_name => "Schema Name",
-  :description => "Enter the name of the PostgreSQL database schema to which applications will connect.  The database schema was created when the initial database was first set up.  This input will be used to set the application server's database config file so that applications can connect to the correct schema within the database.  This input is also used for PostgreSQL dump backups in order to determine which schema is getting backed up.  Ex: mydbschema",
-  :required => false,
-  :recipes => [ "db_postgres::do_dump_import", "db_postgres::do_dump_export", "db_postgres::setup_continuous_export"  ]
-
-attribute "db_postgres/dump/storage_account_provider",
-  :display_name => "Storage Account Provider",
-  :description => "Select the cloud infrastructure where the backup will be saved. For Amazon S3, use ec2.  For Rackspace Cloud Files, use rackspace.",
-  :choice => ["ec2", "rackspace"],
-  :required => false,
-  :recipes => [ "db_postgres::do_dump_import", "db_postgres::do_dump_export", "db_postgres::setup_continuous_export"  ]
 
 attribute "db_postgres/dump/storage_account_id",
   :display_name => "Storage Account Id",
