@@ -238,20 +238,19 @@ action :setup_monitoring do
       backup false
       source "postgresql_collectd_plugin.conf.erb"
       notifies :restart, resources(:service => "collectd")
-      cookbook 'db_postgres'
     end
 
     # install the postgres_ps collectd script into the collectd library plugins directory
-    remote_file(::File.join(node[:rs_utils][:collectd_lib], "plugins", 'postgres_ps')) do
+    remote_file ::File.join(node[:rs_utils][:collectd_lib], "plugins", 'postgres_ps') do
       source "postgres_ps"
       mode "0755"
+      cookbook 'db_postgres'
     end
 
     # add a collectd config file for the postgres_ps script with the exec plugin and restart collectd if necessary
     template ::File.join(node[:rs_utils][:collectd_plugin_dir], 'postgres_ps.conf') do
       source "postgres_collectd_exec.erb"
       notifies :restart, resources(:service => "collectd")
-      cookbook 'db_postgres'
     end
 
   else
