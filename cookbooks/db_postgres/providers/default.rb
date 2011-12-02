@@ -143,9 +143,28 @@ action :install_client do
     pgreporpm = ::File.join(::File.dirname(__FILE__), "..", "files", "centos", "pgdg-centos91-9.1-4.noarch.rpm")
     `rpm -ihv #{pgreporpm}`
 
+  # Need to flush and relead yum cache, Seems Chef not added yum cache it self after add new yum repo.
+  ruby_block "reload-internal-yum-cache" do
+      block do
+      Chef::Provider::Package::Yum::YumCache.instance.reload
+      end
+  action :create
+  end
+
+
   # Install PostgreSQL client rpm
-    pgdevelrpm = ::File.join(::File.dirname(__FILE__), "..", "files", "centos", "postgresql91-devel-9.1.1-1PGDG.rhel5.#{arch}.rpm")
-    `yum -y localinstall #{pgdevelrpm}`
+  #  pgdevelrpm = ::File.join(::File.dirname(__FILE__), "..", "files", "centos", "postgresql91-devel-9.1.1-1PGDG.rhel5.#{arch}.rpm")
+  #  `yum -y localinstall #{pgdevelrpm}`
+
+    # Packages from cookbook files as attachment for PostgreSQL 9.1.1
+    packages = ["postgresql91-devel", "postgresql91-libs", "postgresql91", "postgresql91-contrib"  ]
+    Chef::Log.info("Packages to install: #{packages.join(",")}")
+    packages.each do |p|
+      r = package p do
+        action :nothing
+      end
+      r.run_action(:install)
+    end	
 
   else
 
