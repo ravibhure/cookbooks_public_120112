@@ -31,8 +31,6 @@ set_unless[:db_postgres][:previous_master] = nil
 # Optional attributes
 #
 set_unless[:db_postgres][:port] = "5432"
-set_unless[:db_postgres][:admin_role] = "admins"
-set_unless[:db_postgres][:user_role] = "users"
 
 set_unless[:db_postgres][:tmpdir] = "/tmp"
 set_unless[:db_postgres][:datadir] = "/var/lib/pgsql/9.1/data"
@@ -42,19 +40,13 @@ set_unless[:db_postgres][:pid_file] = ""
 set_unless[:db_postgres][:datadir_relocate] = "/mnt/storage"
 set_unless[:db_postgres][:bind_address] = cloud[:private_ips][0]
 
-set_unless[:db_postgres][:dump][:schema_name] = ""
-set_unless[:db_postgres][:dump][:storage_account_provider] = ""
-set_unless[:db_postgres][:dump][:storage_account_id] = ""
-set_unless[:db_postgres][:dump][:storage_account_secret] = ""
-set_unless[:db_postgres][:dump][:container] = ""
-set_unless[:db_postgres][:dump][:prefix] = ""
-
 # Platform specific attributes
 
 case platform
 when "redhat","centos","fedora","suse"
   set[:db_postgres][:socket] = "/var/run/postgresql"
   set_unless[:db_postgres][:basedir] = "/var/lib/pgsql/9.1"
+  set_unless[:db_postgres][:confdir] = "/var/lib/pgsql/9.1/data"
   set_unless[:db_postgres][:packages_uninstall] = ""
   set_unless[:db_postgres][:packages_install] = ["postgresql91-server", "postgresql91-libs", "postgresql91-devel", "postgresql91", "postgresql91-contrib" ]
   set_unless[:db_postgres][:log] = ""

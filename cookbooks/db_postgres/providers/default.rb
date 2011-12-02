@@ -55,6 +55,7 @@ action :reset do
   @db.reset
 end
 
+
 action :install_client do
 
   # Install PostgreSQL 9.1.1 package(s)
@@ -73,30 +74,9 @@ action :install_client do
 
   else
 
-    # Install development library in compile phase
-    p = package "postgresql-client-9" do
-      package_name value_for_platform(
-        "ubuntu" => {
-          "9.04" => "postgresql-client-9.1",
-          "10.04" => "postgresql-client-9.1"
-        },
-        "default" => 'postgresql-client-9.1'
-      )
-      action :nothing
-    end
-    p.run_action(:install)
-
-    # install client in converge phase
-    package "postgresql191-devel" do
-      package_name value_for_platform(
-        [ "centos", "redhat", "suse" ] => { "default" => "postgresql191-devel" },
-        "default" => "postgresql191-devel"
-      )
-      action :install
-    end
-
+    # Currently supports CentOS in future will support others
+    
   end
-
 
   # == Install PostgreSQL client gem
   #
@@ -120,7 +100,7 @@ action :install_server do
   arch = "x86_64" if arch == "i386"
 
   # Install PostgreSQL 9.1 server rpm
-    pgserverrpm = ::File.join(::File.dirname(__FILE__), "..", "files", "centos", "postgresql91-server-9.1.1-1PGDG.rhel5.#{arch}.rpm") 
+    pgserverrpm = ::File.join(::File.dirname(__FILE__), "..", "files", "centos", "postgresql91-server-9.1.1-1PGDG.rhel5.#{arch}.rpm")
     `yum -y localinstall #{pgserverrpm}`
 
   # Install PostgreSQL contrib rpm
@@ -139,10 +119,9 @@ action :install_server do
   execute "/etc/init.d/postgresql-9.1 initdb" do
     creates touchfile
   end
-
+  
   # == Configure system for PostgreSQL
   #
-
   # Stop PostgreSQL
   service "postgresql-9.1" do
     supports :status => true, :restart => true, :reload => true
@@ -170,7 +149,7 @@ action :install_server do
     mode "0644"
     cookbook 'db_postgres'
   end
-  
+
   # Setup pg_hba.conf
   pg_hba_source = "pg_hba.conf.erb"
 
@@ -210,8 +189,8 @@ action :install_server do
     supports :status => true, :restart => true, :reload => true
     action :start
   end
-
-end 
+    
+end
 
 action :setup_monitoring do
   service "collectd" do
