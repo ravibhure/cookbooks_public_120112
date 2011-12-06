@@ -94,6 +94,7 @@ action :install_client do
     source "#{pglibrpm}"
     provider Chef::Provider::Package::Rpm
   end
+
   package "#{pgdevelrpm}" do
     action :install
     source "#{pgdevelrpm}"
@@ -134,11 +135,21 @@ action :install_server do
     pgserverrpm = ::File.join(::File.dirname(__FILE__), "..", "files", "centos", "postgresql91-server-9.1.1-1PGDG.rhel5.#{arch}.rpm")
   # Install PostgreSQL contrib rpm
      pgcontribpkg =  ::File.join(::File.dirname(__FILE__), "..", "files", "centos", "postgresql91-contrib-9.1.1-1PGDG.rhel5.#{arch}.rpm")
+  # Install uuid package to resolve postgresql-contrib package  
+  uuidrpm = ::File.join(::File.dirname(__FILE__), "..", "files", "centos", "uuid-1.5.1-4.rhel5.#{arch}.rpm")
+
   package "#{pgserverrpm}" do
     action :install
     source "#{pgserverrpm}"
     provider Chef::Provider::Package::Rpm
   end
+
+  package "#{uuidrpm}" do
+    action :install
+    source "#{uuidrpm}"
+    provider Chef::Provider::Package::Rpm
+  end
+
   package "#{pgcontribpkg}" do
     action :install
     source "#{pgcontribpkg}"
