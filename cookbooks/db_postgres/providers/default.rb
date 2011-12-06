@@ -64,7 +64,7 @@ action :install_client do
   arch = "x86_64" if arch == "i386"
 
   # Remove already installed old version of postgresql
-  `yum -y remove postgresql`
+  `yum -y remove $(rpm -qa |grep postgresql | uniq)`
 
   # Install PostgreSQL GPG Key (http://yum.postgresql.org/9.1/redhat/rhel-5-(arch)/pgdg-centos91-9.1-4.noarch.rpm)
     pgreporpm = ::File.join(::File.dirname(__FILE__), "..", "files", "centos", "pgdg-centos91-9.1-4.noarch.rpm")
