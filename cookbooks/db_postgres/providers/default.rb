@@ -73,7 +73,12 @@ action :install_client do
   # Install PostgreSQL GPG Key (http://yum.postgresql.org/9.1/redhat/rhel-5-(arch)/pgdg-centos91-9.1-4.noarch.rpm)
     pgreporpm = ::File.join(::File.dirname(__FILE__), "..", "files", "centos", "pgdg-centos91-9.1-4.noarch.rpm")
     `rpm -ihv #{pgreporpm}`
-    `yum -y install libxslt`
+
+    #Installing Libxslt package for postgresql-9.1 dependancy
+    package "libxslt" do
+      action :install
+    end
+
 
   # Packages from cookbook files as attachment for PostgreSQL 9.1.1
   # Install PostgreSQL client rpm
