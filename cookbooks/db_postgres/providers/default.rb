@@ -82,12 +82,18 @@ action :install_client do
     pgrpm = ::File.join(::File.dirname(__FILE__), "..", "files", "centos", "postgresql91-9.1.1-1PGDG.rhel5.#{arch}.rpm")
  #   `yum -y localinstall #{pgdevelrpm}`
 
-  package "postgresql91" do
-    action :install
-    source "#{pgrpm} #{pglibrpm} #{pgdevelrpm}"
-    provider Chef::Provider::Package::Rpm
-  end   
+      `rpm -ivh --nodeps #{pgrpm}`
 
+  package "#{pglibrpm}" do
+    action :install
+    source "#{pglibrpm}"
+    provider Chef::Provider::Package::Rpm
+  end
+  package "#{pgdevelrpm}" do
+    action :install
+    source "#{pgdevelrpm}"
+    provider Chef::Provider::Package::Rpm
+  end
 
   else
 
@@ -99,10 +105,13 @@ action :install_client do
   #
   # Also installs in compile phase
   #
-  r = execute "install pg gem" do
+  #r = execute "install pg gem" do
+  #  command "/opt/rightscale/sandbox/bin/gem install pg -- --with-pg-config=/usr/pgsql-9.1/bin/pg_config"
+  #end
+  #r.run_action(:run)
+  execute "install pg gem" do
     command "/opt/rightscale/sandbox/bin/gem install pg -- --with-pg-config=/usr/pgsql-9.1/bin/pg_config"
   end
-  r.run_action(:run)
 
   Gem.clear_paths
   log "Gem reload forced with Gem.clear_paths"
