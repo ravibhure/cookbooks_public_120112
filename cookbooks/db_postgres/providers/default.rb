@@ -127,11 +127,18 @@ action :install_server do
 
   # Install PostgreSQL 9.1 server rpm
     pgserverrpm = ::File.join(::File.dirname(__FILE__), "..", "files", "centos", "postgresql91-server-9.1.1-1PGDG.rhel5.#{arch}.rpm")
-    `yum -y localinstall #{pgserverrpm}`
-
   # Install PostgreSQL contrib rpm
      pgcontribpkg =  ::File.join(::File.dirname(__FILE__), "..", "files", "centos", "postgresql91-contrib-9.1.1-1PGDG.rhel5.#{arch}.rpm")
-    `yum -y localinstall #{pgcontribpkg}`
+  package "#{pgserverrpm}" do
+    action :install
+    source "#{pgserverrpm}"
+    provider Chef::Provider::Package::Rpm
+  end
+  package "#{pgcontribpkg}" do
+    action :install
+    source "#{pgcontribpkg}"
+    provider Chef::Provider::Package::Rpm
+  end  
 
 
   service "postgresql-9.1" do
