@@ -20,11 +20,8 @@ recipe  "db::install_server", "Installs and sets up the packages that are requir
 
 recipe  "db::setup_monitoring", "Installs the collectd plugin for database monitoring support, which is required to enable monitoring and alerting functionality for your servers."
 
-
 # == Common Database Recipes
 #
-recipe  "db::setup_block_device", "Relocates the database data directory onto a block_device that supports snapshot backup and restore functionality. This script should be run on a newly operational server before it get placed into production."
-
 recipe  "db::do_backup", "Creates a backup of the database using persistent storage in the current cloud.  On Rackspace, LVM backups are uploaded to the specified CloudFiles container.  For all other clouds, volume snapshots (like EBS) are used."
 recipe  "db::do_restore", "Restores the database from the most recently completed backup available in persistent storage of the current cloud."
 
@@ -38,6 +35,11 @@ recipe  "db::do_secondary_backup", "Creates a backup of the database and uploads
 recipe  "db::do_secondary_restore", "Restores the database from the most recently completed backup available in a secondary location."
 
 recipe  "db::do_force_reset", "Resets the database back to a pristine state. WARNING: Execution of this script will delete any data in your database!"
+
+recipe  "db::do_dump_export", "Creates a dump file and uploads it to an ROS."
+recipe  "db::do_dump_import", "Retrieves a dump file from ROS and imports it into DB."
+recipe  "db::do_dump_schedule_enable", "Schedules the daily run of do_dump_export."
+recipe  "db::do_dump_schedule_disable", "Disables the daily run of do_dump_export."
 
 
 # == Database Firewall Recipes
@@ -53,36 +55,36 @@ recipe "db::request_appserver_deny", "Sends a request to deny connections from t
 
 # == Master/Slave Recipes
 #
+recipe "db::do_init_and_become_master", "Initializes MySQL database.  Tag as Master.  Set Master DNS.  Kick off a fresh backup from this master."
 recipe "db::do_restore_and_become_master", "Restore MySQL database.  Tag as Master.  Set Master DNS.  Kick off a fresh backup from this master."
 recipe "db::do_init_slave", "Initialize MySQL Slave"
 recipe "db::do_init_slave_at_boot", "Initialize MySQL Slave at boot."
-recipe "db::do_tag_as_master", "USE WITH CAUTION! Tag server with master tags and set master DNS to this server."
 recipe "db::do_promote_to_master", "Promote a replicating slave to master"
-recipe "db::setup_master_dns", "USE WITH CAUTION! Set master DNS to this server's IP"
 recipe "db::setup_replication_privileges", "Set up privileges for MySQL replication slaves."
 recipe "db::request_master_allow", "Sends a request to the master database server tagged with rs_dbrepl:master_instance_uuid=<master_instance_uuid> to allow connections from the server's private IP address.  This script should be run on a slave before it sets up replication."
 recipe "db::request_master_deny", "Sends a request to the master database server tagged with rs_dbrepl:master_instance_uuid=<master_instance_uuid> to deny connections from the server's private IP address.  This script should be run on a slave when it stops replicating."
 
 recipe "db::handle_demote_master", "Remote recipe executed by do_promote_to_master. DO NOT RUN."
 
+recipe "db::do_terminate_server", "Deletes any currently attached volumes from the instance and then terminates the machine."
 
 # == Common Database Attributes
 #
 attribute "db",
   :display_name => "General Database Options",
   :type => "hash"
+
+attribute "db/provider",
+  :display_name => "Database Provider",
+  :description => "Database provider for the Master Database. (Ex: db_mysql)",
+  :default => "db_postgres",
+  :choice => [ "db_mysql", "db_postgres" ],
+  :recipes => [ "db::default" ]
   
 attribute "db/fqdn",
   :display_name => "Database Master FQDN",
   :description => "The fully qualified domain name for the Master Database.",
   :required => true,
-  :recipes => [ "db::default" ]
-
-attribute "db/provider",
-  :display_name => "Database Provider",
-  :description => "The database provider for the Master Database. (Ex: db_postgres)",
-  :default => "db_postgres",
-  :choice => [ "db_mysql", "db_postgres" ],
   :recipes => [ "db::default" ]
 
 attribute "db/admin/user",
@@ -101,13 +103,13 @@ attribute "db/replication/user",
   :display_name => "Database Replication Username",
   :description => "The username of the database user that has 'replciation' privileges.",
   :required => true,
-  :recipes => [ "db::setup_replication_privilege", "db::do_restore_and_become_master", "db::do_promote_to_master" ]
+  :recipes => [ "db::setup_replication_privileges", "db::do_restore_and_become_master", "db::do_init_and_become_master", "db::do_promote_to_master", "db::do_init_slave", "db::do_init_slave_at_boot" ]
 
 attribute "db/replication/password",
   :display_name => "Database Replication Password",
   :description => "The password of the database user that has 'replciation' privileges.",
   :required => true,
-  :recipes => [ "db::setup_replication_privilege", "db::do_restore_and_become_master", "db::do_promote_to_master" ]
+  :recipes => [ "db::setup_replication_privileges", "db::do_restore_and_become_master", "db::do_init_and_become_master", "db::do_promote_to_master","db::do_init_slave", "db::do_init_slave_at_boot" ]
 
 attribute "db/application/user",
   :display_name => "Database Application Username",
@@ -137,13 +139,14 @@ attribute "db/backup/lineage",
   :required => true,
   :recipes => [
     "db::do_init_slave",
+    "db::do_init_slave_at_boot",
     "db::do_promote_to_master",
     "db::do_restore_and_become_master",
+    "db::do_init_and_become_master",
     "db::do_backup",
     "db::do_restore",
     "db::do_backup_schedule_enable",
     "db::do_backup_schedule_disable",
-    "db::setup_block_device",
     "db::do_force_reset",
     "db::do_secondary_backup",
     "db::do_secondary_restore"
@@ -191,3 +194,66 @@ attribute "db/backup/slave/minute",
   :description => "Defines the minute of the hour when the backup EBS snapshot will be taken of the Slave database.  Backups of the Slave are taken hourly.  By default, a minute will be randomly chosen at launch time.  Uses standard crontab format. (Ex: 30) for the 30th minute of the hour.",
   :required => false,
   :recipes => [ 'db::do_backup_schedule_enable' ]
+
+
+# == Import/export attributes
+#
+
+attribute "db/dump",
+  :display_name => "Import/Export settings for Database dump file management.",
+  :type => "hash"
+
+attribute "db/dump/storage_account_provider",
+  :display_name => "Dump Storage Account Provider",
+  :description => "Location where dump file will be saved.  Used by dump recipes to backup to Amazon S3 or Rackspace Cloud Files.",
+  :required => "required",
+  :choice => [ "S3", "CloudFiles" ],
+  :recipes => [ "db::do_dump_import", "db::do_dump_export", "db::do_dump_schedule_enable" ]
+
+attribute "db/dump/storage_account_id",
+  :display_name => "Dump Storage Account Id",
+  :description => "In order to write the dump file to the specified cloud storage location, you will need to provide cloud authentication credentials. For Amazon S3, use AWS_ACCESS_KEY_ID. For Rackspace Cloud Files, use your Rackspace login Username.",
+  :required => "required",
+  :recipes => [ "db::do_dump_import", "db::do_dump_export", "db::do_dump_schedule_enable" ]
+
+attribute "db/dump/storage_account_secret",
+  :display_name => "Dump Storage Account Secret",
+  :description => "In order to write the dump file to the specified cloud storage location, you will need to provide cloud authentication credentials. For Amazon S3, use AWS_SECRET_ACCESS_KEY. For Rackspace Cloud Files, use your Rackspace account API Key.",
+  :required => "required",
+  :recipes => [ "db::do_dump_import", "db::do_dump_export", "db::do_dump_schedule_enable" ]
+
+attribute "db/dump/container",
+  :display_name => "Dump Container",
+  :description => "The cloud storage location where the dump file will be saved to or restored from. For Amazon S3, use the bucket name.  For Rackspace Cloud Files, use the container name.",
+  :required => "required",
+  :recipes => [ "db::do_dump_import", "db::do_dump_export", "db::do_dump_schedule_enable" ]
+
+attribute "db/dump/prefix",
+  :display_name => "Dump Prefix",
+  :description => "The prefix that will be used to name/locate the backup of a particular db dump.  Defines the prefix of the dump filename that will be used to name the backup database dumpfile along with a timestamp.",
+  :required => "required",
+  :recipes => [ "db::do_dump_import", "db::do_dump_export", "db::do_dump_schedule_enable" ]
+
+attribute "db/dump/database_name",
+  :display_name => "Dump Schema/Database Name",
+  :description => "Enter the name of the database name/schema to create/restore a dump from/for. Ex: mydbschema",
+  :required => "required",
+  :recipes => [ "db::do_dump_import", "db::do_dump_export", "db::do_dump_schedule_enable" ]
+
+attribute "db/terminate_safety",
+  :display_name => "Terminate Saftey",
+  :description => "Prevents the accidental running of the db::do_teminate_server recipe.  This recipe will only run if the input variable is overridden and set to \"off\".",
+  :type => "string",
+  :choice => ["Override the dropdown and set to \"off\" to really run this recipe"],
+  :default => "Override the dropdown and set to \"off\" to really run this recipe",
+  :required => false,
+  :recipes => [ "db::do_terminate_server" ]
+
+attribute "db/force_safety",
+  :display_name => "Force Reset Saftey",
+  :description => "Prevents the accidental running of the db::do_force_reset recipe.  This recipe will only run if the input variable is overridden and set to \"off\".",
+  :type => "string",
+  :choice => ["Override the dropdown and set to \"off\" to really run this recipe"],
+  :default => "Override the dropdown and set to \"off\" to really run this recipe",
+  :required => false,
+  :recipes => [ "db::do_force_reset" ]

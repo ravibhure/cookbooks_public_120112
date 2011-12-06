@@ -291,3 +291,49 @@ action :setup_monitoring do
 
   end
 end
+
+action :generate_dump_file do
+
+  db_name     = new_resource.db_name
+  dumpfile    = new_resource.dumpfile
+  
+  bash "Write the postgres DB backup file" do
+      user 'postgres'
+      code <<-EOH
+      pg_dump #{schema_name} | gzip -c > #{dumpfile}
+      EOH
+  end
+
+
+end
+
+action :restore_from_dump_file do
+
+  db_name     = new_resource.db_name
+  dumpfile    = new_resource.dumpfile
+
+  log "  Check if DB already exists"
+  ruby_block "checking existing db" do
+    block do
+      db_check = `echo "select datname from pg_database" | psql | grep -q  "#{db_name}"`
+      if ! db_check.empty?
+        raise "ERROR: database '#{db_name}' already exists"
+      end
+    end
+  end
+
+  bash "Import MySQL dump file: #{dumpfile}" do
+    user "postgres"
+    code <<-EOH
+      set -e
+      if [ ! -f #{dumpfile} ]
+      then
+        echo "ERROR: PostgreSQL dumpfile not found! File: '#{dumpfile}'"
+        exit 1
+      fi
+      createdb #{db_name}
+      gunzip < #{dumpfile} | psql #{db_name}
+    EOH
+  end
+  
+end

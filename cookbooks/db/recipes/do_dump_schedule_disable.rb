@@ -5,10 +5,12 @@
 # RightScale Terms of Service available at http://www.rightscale.com/terms.php and,
 # if applicable, other agreements such as a RightScale Master Subscription Agreement.
 
+# == remove cron task for export
+#
 rs_utils_marker :begin
 
-db node[:db][:data_dir] do
-  action :install_client
+cron "db_dump_export" do
+  action :delete
 end
 
 rs_utils_marker :end

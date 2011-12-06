@@ -1,25 +1,9 @@
+#
 # Cookbook Name:: db
 #
-# Copyright (c) 2011 RightScale Inc
-#
-# Permission is hereby granted, free of charge, to any person obtaining
-# a copy of this software and associated documentation files (the
-# "Software"), to deal in the Software without restriction, including
-# without limitation the rights to use, copy, modify, merge, publish,
-# distribute, sublicense, and/or sell copies of the Software, and to
-# permit persons to whom the Software is furnished to do so, subject to
-# the following conditions:
-#
-# The above copyright notice and this permission notice shall be
-# included in all copies or substantial portions of the Software.
-#
-# THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,
-# EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF
-# MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND
-# NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE
-# LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION
-# OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION
-# WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
+# Copyright RightScale, Inc. All rights reserved.  All access and use subject to the
+# RightScale Terms of Service available at http://www.rightscale.com/terms.php and,
+# if applicable, other agreements such as a RightScale Master Subscription Agreement.
 
 # Add actions to @action_list array.
 # Used to allow comments between entries.
@@ -55,6 +39,10 @@ attribute :privilege_database, :kind_of => String, :default => "*.*" # All datab
 attribute :enable, :equal_to => [ true, false ], :default => true
 attribute :ip_addr, :kind_of => String
 attribute :machine_tag, :kind_of => String, :regex => /^([^:]+):(.+)=.+/
+
+# == Import/Export options
+attribute :dumpfile, :kind_of => String
+attribute :db_name, :kind_of => String
 
 
 # = General Database Actions
@@ -131,6 +119,13 @@ add_action :firewall_update_request
 # location.
 #
 add_action :move_data_dir      
+
+
+# == Generate dump file
+add_action :generate_dump_file
+
+# == restore db from dump file
+add_action :restore_from_dump_file
 
 # == Pre-backup Check
 # Verify the database is in a good state for taking a snapshot.
@@ -222,7 +217,6 @@ add_action :promote
 # == Grant Replication Slave
 # TODO
 add_action :grant_replication_slave
-
 
 actions @action_list
 

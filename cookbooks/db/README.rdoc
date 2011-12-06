@@ -17,7 +17,7 @@ the resources/default.rb file.
 
 This cookbook is intended to be used in conjunction with cookbooks that contain
 Lightweight Providers which implement the 'db' interface. See the RightScale 
-db_mysql or db_postgres cookbook for an example.
+db_mysql cookbook for an example.
 
 For more about Lightweight Resources and Providers (LWRPs), please see the Chef
 wiki at:
@@ -52,7 +52,7 @@ available actions, attributes and usage.
 * The default recipe for the cookbook that contains the db provider must also
   be added to your runlist. For example:
   
-    db_mysql::default or db_postgres::default
+    db_mysql::default 
     
   This will load your provider and pull in any database specific attributes 
   as inputs.
@@ -126,3 +126,9 @@ When writing your own database Lightweight Provider:
     depends "db"
     
 
+
+= LICENSE
+
+Copyright RightScale, Inc. All rights reserved.  All access and use subject to the
+RightScale Terms of Service available at http://www.rightscale.com/terms.php and,
+if applicable, other agreements such as a RightScale Master Subscription Agreement.
