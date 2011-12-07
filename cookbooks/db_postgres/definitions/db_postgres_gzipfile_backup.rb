@@ -27,7 +27,7 @@ define :db_postgres_gzipfile_backup, :db_name => nil, :file_path => "/tmp/postgr
   bash "Write the postgres DB backup file" do
     user 'postgres'
 	code <<-EOH
-        pg_dump #{params[:db_name]} | gzip -c > #{params[:file_path]}
+        pg_dump -h /var/run/postgresql -U postgres #{params[:db_name]} | gzip -c > #{params[:file_path]}
 	EOH
   end
 end

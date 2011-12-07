@@ -31,20 +31,20 @@ define :db_postgres_set_privileges, :preset => "administrator", :username => nil
   db_name = "*.*"
   db_name = "#{params[:db_name]}.*" if params[:db_name]
 
-# Setting postgres user password for connection
+# Setting postgres user password for conection
 # randomly generate postgres password
 node.set_unless[:postgresql][:password][:postgres] = secure_password
   bash "assign-postgres-password" do
     user 'postgres'
     code <<-EOH
-  echo "ALTER ROLE postgres ENCRYPTED PASSWORD '#{node[:postgresql][:password][:postgres]}';" | psql
+  #echo "ALTER ROLE postgres ENCRYPTED PASSWORD '#{node[:postgresql][:password][:postgres]}';" | psql
     EOH
     not_if do
       begin
         require 'rubygems'
         Gem.clear_paths
         require 'pg'
-        conn = PGconn.connect("localhost", 5432, nil, nil, nil, "postgres", node['postgresql']['password']['postgres'])
+        con = PGcon.conect("localhost", "postgres")
       rescue PGError
         false
       end
@@ -57,8 +57,9 @@ node.set_unless[:postgresql][:password][:postgres] = secure_password
       require 'rubygems'
       require 'pg'
 
-      #con = PGconn.connect("", "5432", nil, nil, nil, "postgres", "#{node[:db_postgres][:socket]}")
-	conn = PGconn.connect("localhost", 5432, nil, nil, nil, "postgres", node['postgresql']['password']['postgres'])
+      #con = PGcon.conect("", "5432", nil, nil, nil, "postgres", "#{node[:db_postgres][:socket]}")
+	#con = PGcon.conect("localhost", 5432, nil, nil, nil, "postgres", node['postgresql']['password']['postgres'])
+        con = PGcon.conect("localhost", "postgres")
 
       # Now that we have a Postgresql object, let's santize our inputs
       username = con.escape_string(username)
@@ -68,21 +69,21 @@ node.set_unless[:postgresql][:password][:postgres] = secure_password
       when 'administrator'
       # Create group roles, don't error out if already created.  Users don't inherit "special" attribs
       # from group role, see: http://www.postgresql.org/docs/9.1/static/role-membership.html
-        con.query("CREATE ROLE admins SUPERUSER CREATEDB CREATEROLE INHERIT LOGIN")
+        con.exec("CREATE ROLE admins SUPERUSER CREATEDB CREATEROLE INHERIT LOGIN")
       
       # Enable admin/replication user
-        con.query("CREATE USER #{username} ENCRYPTED PASSWORD '#{password}' #{node[:db_postgres][:admin_role]} ; GRANT #{node[:db_postgres][:admin_role]} TO #{username}")
+        con.exec("CREATE USER #{username} ENCRYPTED PASSWORD '#{password}' #{node[:db_postgres][:admin_role]} ; GRANT #{node[:db_postgres][:admin_role]} TO #{username}")
         
       when 'user'
       # Create group roles, don't error out if already created.  Users don't inherit "special" attribs
       # from group role, see: http://www.postgresql.org/docs/9.1/static/role-membership.html
-        con.query("CREATE ROLE users NOSUPERUSER CREATEDB NOCREATEROLE INHERIT LOGIN")
+        con.exec("CREATE ROLE users NOSUPERUSER CREATEDB NOCREATEROLE INHERIT LOGIN")
       
       # Set default privileges for any future tables, sequences, or functions created.
-        con.query("ALTER DEFAULT PRIVILEGES FOR ROLE users GRANT ALL ON TABLES to users; ALTER DEFAULT PRIVILEGES FOR ROLE users GRANT ALL ON SEQUENCES to users; ALTER DEFAULT PRIVILEGES FOR ROLE users GRANT ALL ON FUNCTIONS to users")
+        con.exec("ALTER DEFAULT PRIVILEGES FOR ROLE users GRANT ALL ON TABLES to users; ALTER DEFAULT PRIVILEGES FOR ROLE users GRANT ALL ON SEQUENCES to users; ALTER DEFAULT PRIVILEGES FOR ROLE users GRANT ALL ON FUNCTIONS to users")
       
       # Enable application user  
-        con.query("CREATE USER #{username} ENCRYPTED PASSWORD '#{password}' #{node[:db_postgres][:user_role]} ; GRANT #{node[:db_postgres][:user_role]} TO #{username}")
+        con.exec("CREATE USER #{username} ENCRYPTED PASSWORD '#{password}' #{node[:db_postgres][:user_role]} ; GRANT #{node[:db_postgres][:user_role]} TO #{username}")
       else
         raise "only 'administrator' and 'user' type presets are supported!"
       end

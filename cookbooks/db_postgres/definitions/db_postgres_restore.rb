@@ -40,7 +40,7 @@ define :db_postgres_restore,  :url => nil, :branch => 'master', :user => nil, :c
   end
 
   bash "unpack pg_dump file: #{dumpfile}" do
-    not_if "echo \"select datname from pg_database\" | psql | grep -q  \"^#{schema_name}$\""
+    not_if "echo \"select datname from pg_database\" | psql -h /var/run/postgresql -U postgres | grep -q  \"^#{schema_name}$\""
     user "postgres"
     cwd dir
     code <<-EOH
@@ -50,8 +50,8 @@ define :db_postgres_restore,  :url => nil, :branch => 'master', :user => nil, :c
         echo "ERROR: PostgreSQL dumpfile not found! File: '#{dumpfile}'"
         exit 1
       fi
-      createdb #{schema_name}
-      gunzip < #{dumpfile} | psql #{schema_name}
+      createdb -h /var/run/postgresql -U postgres #{schema_name}
+      gunzip < #{dumpfile} | psql -h /var/run/postgresql -U postgres #{schema_name}
     EOH
   end
 

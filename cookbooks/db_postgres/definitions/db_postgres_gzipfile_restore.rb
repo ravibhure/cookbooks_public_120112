@@ -26,9 +26,9 @@ define :db_postgres_gzipfile_restore, :db_name => nil, :file_path => nil do
   bash "(Over)Write #{params[:db_name]} db with data from the backup" do
   user 'postgres'
     code <<-EOF
-      echo "DROP DATABASE [ IF EXISTS ] #{params[:db_name]}" | psql
-      createdb #{params[:db_name]}
-      gunzip -c #{params[:file_path]} | psql #{params[:db_name]}  
+      dropdb -h /var/run/postgresql -U postgres #{params[:db_name]}
+      createdb -h /var/run/postgresql -U postgres #{params[:db_name]}
+      gunzip -c #{params[:file_path]} | psql -h /var/run/postgresql -U postgres #{params[:db_name]}  
     EOF
   end
 end
