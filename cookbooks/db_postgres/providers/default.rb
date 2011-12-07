@@ -299,7 +299,7 @@ action :generate_dump_file do
   bash "Write the postgres DB backup file" do
       user 'postgres'
       code <<-EOH
-      pg_dump #{schema_name} | gzip -c > #{dumpfile}
+      pg_dump #{db_name} | gzip -c > #{dumpfile}
       EOH
   end
 
