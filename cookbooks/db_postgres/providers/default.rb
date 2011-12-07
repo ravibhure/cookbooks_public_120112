@@ -302,7 +302,7 @@ action :restore_from_dump_file do
   log "  Check if DB already exists"
   ruby_block "checking existing db" do
     block do
-      db_check = `echo "select datname from pg_database" | psql -h /var/run/postgresql | grep -q  "#{db_name}"`
+      db_check = `echo "select datname from pg_database" | psql -U postgres -h /var/run/postgresql | grep -q  "#{db_name}"`
       if ! db_check.empty?
         raise "ERROR: database '#{db_name}' already exists"
       end
