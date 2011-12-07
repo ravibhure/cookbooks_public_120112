@@ -158,7 +158,6 @@ action :install_server do
 
 
   service "postgresql-9.1" do
-    #service_name value_for_platform([ "centos", "redhat", "suse" ] => {"default" => "postgresql-9.1"}, "default" => "postgresql-9.1")
     supports :status => true, :restart => true, :reload => true
     action :stop
   end
@@ -191,7 +190,7 @@ action :install_server do
   # Setup postgresql.conf
   template_source = "postgresql.conf.erb"
 
-  template value_for_platform([ "centos", "redhat", "suse" ] => {"default" => "#{node[:db_postgres][:confdir]}/postgresql.conf"}, "default" => "#{node[:db_postgres][:confdir]}/postgresql.conf") do
+  template "#{node[:db_postgres][:confdir]}/postgresql.conf" do
     source template_source
     owner "postgres"
     group "postgres"
@@ -202,7 +201,7 @@ action :install_server do
   # Setup pg_hba.conf
   pg_hba_source = "pg_hba.conf.erb"
 
-  template value_for_platform([ "centos", "redhat", "suse" ] => {"default" => "#{node[:db_postgres][:confdir]}/pg_hba.conf"}, "default" => "#{node[:db_postgres][:confdir]}/pg_hba.conf") do
+  template "#{node[:db_postgres][:confdir]}/pg_hba.conf" do
     source pg_hba_source
     owner "postgres"
     group "postgres"
@@ -315,7 +314,7 @@ action :restore_from_dump_file do
   log "  Check if DB already exists"
   ruby_block "checking existing db" do
     block do
-      db_check = `echo "select datname from pg_database" | psql | grep -q  "#{db_name}"`
+      db_check = `echo "select datname from pg_database" | psql -h /var/run/postgresql | grep -q  "#{db_name}"`
       if ! db_check.empty?
         raise "ERROR: database '#{db_name}' already exists"
       end
@@ -332,7 +331,7 @@ action :restore_from_dump_file do
         exit 1
       fi
       createdb #{db_name}
-      gunzip < #{dumpfile} | psql #{db_name}
+      gunzip < #{dumpfile} | psql -h /var/run/postgresql #{db_name}
     EOH
   end
   
