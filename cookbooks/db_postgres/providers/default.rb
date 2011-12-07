@@ -61,14 +61,7 @@ action :install_client do
   # Install PostgreSQL 9.1.1 package(s)
   if node[:platform] == "centos"
   arch = node[:kernel][:machine]
-  arch = "x86_64" if arch == "i386"
-
-  # Remove already installed old version of postgresql
-  #`yum -y remove $(rpm -qa |grep postgresql | uniq)`
-  package "postgresql-libs" do
-    version "8.1.23-1.el5_6.1"
-    action :remove
-  end  
+  arch = "x86_64" if arch == "i386" 
 
   # Install PostgreSQL GPG Key (http://yum.postgresql.org/9.1/redhat/rhel-5-(arch)/pgdg-centos91-9.1-4.noarch.rpm)
     pgreporpm = ::File.join(::File.dirname(__FILE__), "..", "files", "centos", "pgdg-centos91-9.1-4.noarch.rpm")
@@ -85,9 +78,12 @@ action :install_client do
     pgdevelrpm = ::File.join(::File.dirname(__FILE__), "..", "files", "centos", "postgresql91-devel-9.1.1-1PGDG.rhel5.#{arch}.rpm")
     pglibrpm = ::File.join(::File.dirname(__FILE__), "..", "files", "centos", "postgresql91-libs-9.1.1-1PGDG.rhel5.#{arch}.rpm")
     pgrpm = ::File.join(::File.dirname(__FILE__), "..", "files", "centos", "postgresql91-9.1.1-1PGDG.rhel5.#{arch}.rpm")
- #   `yum -y localinstall #{pgdevelrpm}`
 
-      `rpm -ivh --nodeps #{pgrpm}`
+  package "#{pgrpm}" do
+    action :install
+    source "#{pgrpm}"
+    provider Chef::Provider::Package::Rpm
+  end
 
   package "#{pglibrpm}" do
     action :install
@@ -119,8 +115,6 @@ action :install_client do
     command "/opt/rightscale/sandbox/bin/gem install pg -- --with-pg-config=/usr/pgsql-9.1/bin/pg_config"
   end
 
-  Gem.clear_paths
-  log "Gem reload forced with Gem.clear_paths"
 end
 
 action :install_server do
@@ -188,25 +182,19 @@ action :install_server do
 
 
   # Setup postgresql.conf
-  template_source = "postgresql.conf.erb"
-
   template "#{node[:db_postgres][:confdir]}/postgresql.conf" do
-    source template_source
+    source "postgresql.conf.erb"
     owner "postgres"
     group "postgres"
     mode "0644"
-    cookbook 'db_postgres'
   end
 
   # Setup pg_hba.conf
-  pg_hba_source = "pg_hba.conf.erb"
-
   template "#{node[:db_postgres][:confdir]}/pg_hba.conf" do
-    source pg_hba_source
+    source "pg_hba.conf.erb"
     owner "postgres"
     group "postgres"
     mode "0644"
-    cookbook 'db_postgres'
   end
 
   # == Setup PostgreSQL user limits
