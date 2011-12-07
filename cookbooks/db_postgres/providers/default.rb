@@ -330,7 +330,7 @@ action :restore_from_dump_file do
         echo "ERROR: PostgreSQL dumpfile not found! File: '#{dumpfile}'"
         exit 1
       fi
-      createdb #{db_name}
+      createdb -h /var/run/postgresql #{db_name}
       gunzip < #{dumpfile} | psql -h /var/run/postgresql #{db_name}
     EOH
   end
