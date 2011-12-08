@@ -23,7 +23,7 @@
 # OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION
 # WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
-define :db_postgres_set_privileges, :preset => "administrator", :username => nil, :password => nil, :db_name => nil, :admin_role => "admins", :user_role => "user" do 
+define :db_postgres_set_privileges, :preset => "administrator", :username => nil, :password => nil, :db_name => nil, :admin_role => "#{node[:db_postgres][:admin_role]}", :user_role => "#{node[:db_postgres][:user_role]}" do 
 
 
   priv_preset = params[:preset]
