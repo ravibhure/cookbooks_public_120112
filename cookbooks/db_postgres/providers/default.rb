@@ -120,21 +120,25 @@ action :install_client do
   arch = "x86_64" if arch == "i386" 
 
   # Install PostgreSQL GPG Key (http://yum.postgresql.org/9.1/redhat/rhel-5-(arch)/pgdg-centos91-9.1-4.noarch.rpm)
-  #  pgreporpm = ::File.join(::File.dirname(__FILE__), "..", "files", "centos", "pgdg-centos91-9.1-4.noarch.rpm")
-  #  `rpm -ihv #{pgreporpm}`
+    pgreporpm = ::File.join(::File.dirname(__FILE__), "..", "files", "centos", "pgdg-centos91-9.1-4.noarch.rpm")
+    `rpm -ihv #{pgreporpm}`
 
     #Installing Libxslt package for postgresql-9.1 dependancy
     package "libxslt" do
       action :install
     end
 
-
   # Packages from cookbook files as attachment for PostgreSQL 9.1.1
   # Install PostgreSQL client rpm
     pgdevelrpm = ::File.join(::File.dirname(__FILE__), "..", "files", "centos", "postgresql91-devel-9.1.1-1PGDG.rhel5.#{arch}.rpm")
     pglibrpm = ::File.join(::File.dirname(__FILE__), "..", "files", "centos", "postgresql91-libs-9.1.1-1PGDG.rhel5.#{arch}.rpm")
     pgrpm = ::File.join(::File.dirname(__FILE__), "..", "files", "centos", "postgresql91-9.1.1-1PGDG.rhel5.#{arch}.rpm")
-     `rpm -ivh #{pgrpm}`
+
+  package "#{pgrpm}" do
+    action :install
+    source "#{pgrpm}"
+    provider Chef::Provider::Package::Rpm
+  end
 
   package "#{pglibrpm}" do
     action :install
