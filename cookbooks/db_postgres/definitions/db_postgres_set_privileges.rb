@@ -52,7 +52,7 @@ define :db_postgres_set_privileges, :preset => "administrator", :username => nil
         con.exec("CREATE ROLE #{admin_role} SUPERUSER CREATEDB CREATEROLE INHERIT LOGIN")
       
       # Enable admin/replication user
-        con.exec("CREATE USER #{username} ENCRYPTED PASSWORD '#{password}'}")
+        con.exec("CREATE USER #{username} ENCRYPTED PASSWORD '#{password}'")
         
       # Grant role previleges to admin/replication user
         con.exec("GRANT #{admin_role} TO #{username}")
@@ -68,7 +68,8 @@ define :db_postgres_set_privileges, :preset => "administrator", :username => nil
         con.exec("ALTER DEFAULT PRIVILEGES FOR ROLE #{user_role} GRANT ALL ON FUNCTIONS to #{user_role}")
       
       # Enable application user  
-        con.exec("CREATE USER #{username} ENCRYPTED PASSWORD '#{password}' #{user_role} ; GRANT #{user_role} TO #{username}")
+        con.exec("CREATE USER #{username} ENCRYPTED PASSWORD '#{password}'")
+        con.exec("GRANT #{user_role} TO #{username}")
       else
         raise "only 'administrator' and 'user' type presets are supported!"
       end
