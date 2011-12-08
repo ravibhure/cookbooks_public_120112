@@ -133,12 +133,7 @@ action :install_client do
     pgdevelrpm = ::File.join(::File.dirname(__FILE__), "..", "files", "centos", "postgresql91-devel-9.1.1-1PGDG.rhel5.#{arch}.rpm")
     pglibrpm = ::File.join(::File.dirname(__FILE__), "..", "files", "centos", "postgresql91-libs-9.1.1-1PGDG.rhel5.#{arch}.rpm")
     pgrpm = ::File.join(::File.dirname(__FILE__), "..", "files", "centos", "postgresql91-9.1.1-1PGDG.rhel5.#{arch}.rpm")
-
-  package "#{pgrpm}" do
-    action :install
-    source "#{pgrpm}"
-    provider Chef::Provider::Package::Rpm
-  end
+	`rpm -ivh --nodeps #{pgrpm}`
 
   package "#{pglibrpm}" do
     action :install
