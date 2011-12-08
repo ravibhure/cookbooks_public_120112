@@ -30,6 +30,8 @@ define :db_postgres_set_privileges, :preset => "administrator", :username => nil
   password = params[:password]
   db_name = "*.*"
   db_name = "#{params[:db_name]}.*" if params[:db_name]
+  role_name = "#params[[:db_postgres][:admin_role]}"
+  user_name = "#params[[:db_postgres][:user_role]}"
 
   ruby_block "set admin credentials" do
     block do
@@ -46,26 +48,26 @@ define :db_postgres_set_privileges, :preset => "administrator", :username => nil
       when 'administrator'
       # Create group roles, don't error out if already created.  Users don't inherit "special" attribs
       # from group role, see: http://www.postgresql.org/docs/9.1/static/role-membership.html
-        con.exec("CREATE ROLE #{node{[:db_postgres][:admin_role]} SUPERUSER CREATEDB CREATEROLE INHERIT LOGIN")
+        con.exec("CREATE ROLE #{admin_role} SUPERUSER CREATEDB CREATEROLE INHERIT LOGIN")
       
       # Enable admin/replication user
         con.exec("CREATE USER #{username} ENCRYPTED PASSWORD '#{password}'}")
         
       # Grant role previleges to admin/replication user
-        con.exec("GRANT #{node[:db_postgres][:admin_role]} TO #{username}")
+        con.exec("GRANT #{admin_role} TO #{username}")
 
       when 'user'
       # Create group roles, don't error out if already created.  Users don't inherit "special" attribs
       # from group role, see: http://www.postgresql.org/docs/9.1/static/role-membership.html
-        con.exec("CREATE ROLE #{node[:db_postgres][:user_role]} NOSUPERUSER CREATEDB NOCREATEROLE INHERIT LOGIN")
+        con.exec("CREATE ROLE #{user_role} NOSUPERUSER CREATEDB NOCREATEROLE INHERIT LOGIN")
       
       # Set default privileges for any future tables, sequences, or functions created.
-        con.exec("ALTER DEFAULT PRIVILEGES FOR ROLE #{node[:db_postgres][:user_role]} GRANT ALL ON TABLES to #{node[:db_postgres][:user_role]}")
-        con.exec("ALTER DEFAULT PRIVILEGES FOR ROLE #{node[:db_postgres][:user_role]} GRANT ALL ON SEQUENCES to #{node[:db_postgres][:user_role]}")
-        con.exec("ALTER DEFAULT PRIVILEGES FOR ROLE #{node[:db_postgres][:user_role]} GRANT ALL ON FUNCTIONS to #{node[:db_postgres][:user_role]}")
+        con.exec("ALTER DEFAULT PRIVILEGES FOR ROLE #{user_role} GRANT ALL ON TABLES to #{user_role}")
+        con.exec("ALTER DEFAULT PRIVILEGES FOR ROLE #{user_role} GRANT ALL ON SEQUENCES to #{user_role}")
+        con.exec("ALTER DEFAULT PRIVILEGES FOR ROLE #{user_role} GRANT ALL ON FUNCTIONS to #{user_role}")
       
       # Enable application user  
-        con.exec("CREATE USER #{username} ENCRYPTED PASSWORD '#{password}' #{node[:db_postgres][:user_role]} ; GRANT #{node[:db_postgres][:user_role]} TO #{username}")
+        con.exec("CREATE USER #{username} ENCRYPTED PASSWORD '#{password}' #{user_role} ; GRANT #{user_role} TO #{username}")
       else
         raise "only 'administrator' and 'user' type presets are supported!"
       end
