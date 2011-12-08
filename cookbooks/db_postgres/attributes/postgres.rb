@@ -31,13 +31,14 @@ set_unless[:db_postgres][:previous_master] = nil
 # Optional attributes
 #
 set_unless[:db_postgres][:port] = "5432"
-
+set_unless[:db_postgres][:admin_role] = "admins"
+set_unless[:db_postgres][:user_role] = "user"
 set_unless[:db_postgres][:tmpdir] = "/tmp"
 set_unless[:db_postgres][:datadir] = "/var/lib/pgsql/9.1/data"
 set_unless[:db_postgres][:confdir] = "/var/lib/pgsql/9.1/data"
 set_unless[:db_postgres][:ident_file] = ""
 set_unless[:db_postgres][:pid_file] = ""
-set_unless[:db_postgres][:datadir_relocate] = "/mnt/storage"
+set_unless[:db_postgres][:datadir_relocate] = "/mnt/pgsql"
 set_unless[:db_postgres][:bind_address] = cloud[:private_ips][0]
 
 # Platform specific attributes
