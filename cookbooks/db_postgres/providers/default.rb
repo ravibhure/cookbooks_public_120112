@@ -284,6 +284,7 @@ action :grant_replication_slave do
   require 'rubygems'
   Gem.clear_paths
   require 'pg'
+  admin_role = node[:db_postgres][:admin_role]
   
   Chef::Log.info "GRANT REPLICATION SLAVE to #{node[:db][:replication][:user]}"
   # Opening connection for pg operation
@@ -292,7 +293,7 @@ action :grant_replication_slave do
   # Enable admin/replication user
   conn.exec("CREATE USER #{node[:db][:replication][:user]} ENCRYPTED PASSWORD '#{node[:db][:replication][:password]}'")
   # Grant role previleges to admin/replication user
-  conn.exec("GRANT #{node[:db_postgres][:admin_role]} TO #{node[:db][:replication][:user]}")
+  conn.exec("GRANT #{admin_role} TO #{node[:db][:replication][:user]}")
   conn.close
 end
 
