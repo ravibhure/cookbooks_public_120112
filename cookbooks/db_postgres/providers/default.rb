@@ -290,9 +290,9 @@ action :grant_replication_slave do
   conn = PGconn.open("localhost", nil, nil, nil, nil, "postgres", nil)
   
   # Enable admin/replication user
-  conn.exec("CREATE USER '#{node[:db][:replication][:user]}' ENCRYPTED PASSWORD '#{node[:db][:replication][:password]}'")
+  conn.exec("CREATE USER #{node[:db][:replication][:user]} ENCRYPTED PASSWORD '#{node[:db][:replication][:password]}'")
   # Grant role previleges to admin/replication user
-  conn.exec("GRANT '#{node[:db_postgres][:admin_role]}' TO '#{node[:db][:replication][:user]}'")
+  conn.exec("GRANT #{node[:db_postgres][:admin_role]} TO #{node[:db][:replication][:user]}")
   conn.close
 end
 
