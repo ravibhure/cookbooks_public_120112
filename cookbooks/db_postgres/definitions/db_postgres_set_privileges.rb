@@ -37,6 +37,7 @@ define :db_postgres_set_privileges, :preset => "administrator", :username => nil
   ruby_block "set admin credentials" do
     block do
       require 'rubygems'
+      Gem.clear_paths
       require 'pg'
 
 	con = PGconn.open("localhost", nil, nil, nil, nil, "postgres", nil)
