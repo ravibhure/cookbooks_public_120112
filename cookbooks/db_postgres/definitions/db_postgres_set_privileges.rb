@@ -23,7 +23,7 @@
 # OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION
 # WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
-define :db_postgres_set_privileges, :preset => "administrator", :username => nil, :password => nil, :db_name => nil, :admin_role => "administrator", :user_role => "symuser" do 
+define :db_postgres_set_privileges, :preset => "administrator", :username => nil, :password => nil, :db_name => nil do 
 
 
   priv_preset = params[:preset]
@@ -31,8 +31,8 @@ define :db_postgres_set_privileges, :preset => "administrator", :username => nil
   password = params[:password]
   db_name = "*.*"
   db_name = "#{params[:db_name]}.*" if params[:db_name]
-  admin_role = params[:admin_role]
-  user_role = params[:user_role]
+  admin_role = params[:preset]
+  user_role = "userrole"
 
   ruby_block "set admin credentials" do
     block do
