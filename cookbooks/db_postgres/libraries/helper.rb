@@ -35,24 +35,24 @@ module RightScale
           node[:db_postgres][:pgcnf_uuid]
         end
 
-      #  def init(new_resource)
-      #    begin
-      #      require 'rightscale_tools'
-      #    rescue LoadError
-      #      Chef::Log.warn("This database cookbook requires our premium 'rightscale_tools' gem.")
-      #      Chef::Log.warn("Please contact Rightscale to upgrade your account.")
-      #    end
-      #    mount_point = new_resource.name
-      #    RightScale::Tools::Database.factory(:postgres, new_resource.user, new_resource.password, mount_point, Chef::Log)
-      #  end
+        #def init(new_resource)
+        #  begin
+        #    require 'rightscale_tools'
+        #  rescue LoadError
+        #    Chef::Log.warn("This database cookbook requires our premium 'rightscale_tools' gem.")
+        #    Chef::Log.warn("Please contact Rightscale to upgrade your account.")
+        #  end
+        #  mount_point = new_resource.name
+        #  RightScale::Tools::Database.factory(:postgres, new_resource.user, new_resource.password, mount_point, Chef::Log)
+        #end
 
-      #  def self.load_replication_info(node)
-      #    loadfile = ::File.join(node[:db][:data_dir], SNAPSHOT_POSITION_FILENAME)
-      #    Chef::Log.info "Loading replication information from #{loadfile}"
-      #    YAML::load_file(loadfile)
-      #  end
+        def self.load_replication_info(node)
+          loadfile = ::File.join(node[:db][:data_dir], SNAPSHOT_POSITION_FILENAME)
+          Chef::Log.info "Loading replication information from #{loadfile}"
+          YAML::load_file(loadfile)
+        end
 
-        def self.get_pgsql_handle(node, hostname = 'localhost')
+        def self.get_pgsql_handle(node, hostname = 'localhost', nil, nil, nil, nil, username = 'postgres', nil)
           info_msg = "PostgreSQL connection to #{hostname}"
           info_msg << ": opening NEW PostgreSQL connection."
           con = PGconn.open("localhost", nil, nil, nil, nil, "postgres", nil)
@@ -62,7 +62,9 @@ module RightScale
           return con
         end
 
-        def self.do_query(node, query, hostname = 'localhost', timeout = nil, tries = 1)
+        def self.do_query(node, query, hostname = 'localhost', username = 'postgres' timeout = nil, tries = 1)
+          require 'rubygems'
+          Gem.clear_paths
           require 'pg'
 
           while(1) do
@@ -74,14 +76,14 @@ module RightScale
               result = nil
               if timeout
                 SystemTimer.timeout_after(timeout) do
-                  con = get_pgsql_handle(node, hostname)
+                  con = get_pgsql_handle(node, hostname, nil, nil, nil, nil, username, nil)
                   result = con.exec(query)
                 end
               else
-                con = get_pgsql_handle(node, hostname)
+                con = get_pgsql_handle(node, hostname, nil, nil, nil, nil, username, nil)
                 result = con.exec(query)
               end
-              return result.fetch_hash if result
+              return result.get_result if result
               return result
             rescue Timeout::Error => e
               Chef::Log.info("Timeout occured during pgsql query:#{e}")
@@ -110,9 +112,9 @@ module RightScale
           # don't log replication user and password
           cmd = cmd +          ", MASTER_USER='#{node[:db][:replication][:user]}'"
           cmd = cmd +          ", MASTER_PASSWORD='#{node[:db][:replication][:password]}'"
-          RightScale::Database::PostgreSQL::Helper.do_query(node, cmd, hostname)
+          RightScale::Database::PostgreSQL::Helper.do_query(node, cmd, hostname, username)
 
-          RightScale::Database::PostgreSQL::Helper.do_query(node, "START SLAVE", hostname)
+          RightScale::Database::PostgreSQL::Helper.do_query(node, "START SLAVE", hostname, username)
           started=false
           10.times do
             row = RightScale::Database::PostgreSQL::Helper.do_query(node, "SHOW SLAVE STATUS", hostname)
