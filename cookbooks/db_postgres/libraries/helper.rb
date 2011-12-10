@@ -52,7 +52,11 @@ module RightScale
           YAML::load_file(loadfile)
         end
 
-        def self.get_pgsql_handle(node, hostname = 'localhost', nil, nil, nil, nil, username = 'postgres', nil)
+        def self.get_pgsql_handle(node, hostname = 'localhost', username = 'postgres')
+          require 'rubygems'
+          Gem.clear_paths
+          require 'pg'
+
           info_msg = "PostgreSQL connection to #{hostname}"
           info_msg << ": opening NEW PostgreSQL connection."
           conn = PGconn.open("localhost", nil, nil, nil, nil, "postgres", nil)
