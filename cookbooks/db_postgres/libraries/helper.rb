@@ -30,9 +30,9 @@ module RightScale
         SNAPSHOT_POSITION_FILENAME = 'rs_snapshot_position.yaml'
         DEFAULT_CRITICAL_TIMEOUT = 7
 
-        def pgcnf_uuid
-          node[:db_postgres][:pgcnf_uuid] ||= Time.new.to_i
-          node[:db_postgres][:pgcnf_uuid]
+        def mycnf_uuid
+          node[:db_postgres][:mycnf_uuid] ||= Time.new.to_i
+          node[:db_postgres][:mycnf_uuid]
         end
 
         #def init(new_resource)
