@@ -55,14 +55,14 @@ module RightScale
         def self.get_pgsql_handle(node, hostname = 'localhost', nil, nil, nil, nil, username = 'postgres', nil)
           info_msg = "PostgreSQL connection to #{hostname}"
           info_msg << ": opening NEW PostgreSQL connection."
-          con = PGconn.open("localhost", nil, nil, nil, nil, "postgres", nil)
+          conn = PGconn.open("localhost", nil, nil, nil, nil, "postgres", nil)
           Chef::Log.info info_msg
           # this raises if the connection has gone away
-          con.ping
-          return con
+          conn.ping
+          return conn
         end
 
-        def self.do_query(node, query, hostname = 'localhost', username = 'postgres' timeout = nil, tries = 1)
+        def self.do_query(node, query, hostname = 'localhost', username = 'postgres', timeout = nil, tries = 1)
           require 'rubygems'
           Gem.clear_paths
           require 'pg'
@@ -76,12 +76,12 @@ module RightScale
               result = nil
               if timeout
                 SystemTimer.timeout_after(timeout) do
-                  con = get_pgsql_handle(node, hostname, nil, nil, nil, nil, username, nil)
-                  result = con.exec(query)
+                  conn = get_pgsql_handle(node, hostname, nil, nil, nil, nil, username, nil)
+                  result = conn.exec(query)
                 end
               else
-                con = get_pgsql_handle(node, hostname, nil, nil, nil, nil, username, nil)
-                result = con.exec(query)
+                conn = get_pgsql_handle(node, hostname, nil, nil, nil, nil, username, nil)
+                result = conn.exec(query)
               end
               return result.get_result if result
               return result
