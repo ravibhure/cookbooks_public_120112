@@ -53,10 +53,6 @@ module RightScale
         end
 
         def self.get_pgsql_handle(node, hostname = 'localhost', username = 'postgres')
-          require 'rubygems'
-          Gem.clear_paths
-          require 'pg'
-
           info_msg = "PostgreSQL connection to #{hostname}"
           info_msg << ": opening NEW PostgreSQL connection."
           conn = PGconn.open("localhost", nil, nil, nil, nil, "postgres", nil)
@@ -141,3 +137,4 @@ module RightScale
       end
     end
   end
+end
