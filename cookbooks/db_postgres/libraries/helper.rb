@@ -52,7 +52,7 @@ module RightScale
           YAML::load_file(loadfile)
         end
 
-        def self.get_pgsql_handle(node, hostname = 'localhost', username = 'postgres')
+        def self.get_pgsql_handle(hostname = "localhost", username = "postgres")
           info_msg = "PostgreSQL connection to #{hostname}"
           info_msg << ": opening NEW PostgreSQL connection."
           conn = PGconn.open("localhost", nil, nil, nil, nil, "postgres", nil)
@@ -62,7 +62,7 @@ module RightScale
           return conn
         end
 
-        def self.do_query(node, query, hostname = 'localhost', username = 'postgres', timeout = nil, tries = 1)
+        def self.do_query(query, hostname = 'localhost', username = 'postgres', timeout = nil, tries = 1)
           require 'rubygems'
           Gem.clear_paths
           require 'pg'
@@ -76,11 +76,11 @@ module RightScale
               result = nil
               if timeout
                 SystemTimer.timeout_after(timeout) do
-                  conn = get_pgsql_handle(node, hostname, nil, nil, nil, nil, username, nil)
+                  conn = get_pgsql_handle("localhost", nil, nil, nil, nil, "postgres", nil)
                   result = conn.exec(query)
                 end
               else
-                conn = get_pgsql_handle(node, hostname, nil, nil, nil, nil, username, nil)
+                conn = get_pgsql_handle("localhost", nil, nil, nil, nil, "postgres", nil)
                 result = conn.exec(query)
               end
               return result.get_result if result
@@ -93,7 +93,7 @@ module RightScale
           end
         end
 
-        def self.reconfigure_replication(node, hostname = 'localhost', newmaster_host = nil, newmaster_logfile=nil, newmaster_position=nil)
+        def self.reconfigure_replication(hostname = 'localhost', newmaster_host = nil, newmaster_logfile=nil, newmaster_position=nil)
 # These must be passed and not read from a file
 #          master_info = RightScale::Database::PostgreSQL::Helper.load_replication_info(node)
 #          newmaster_host = master_info['Master_IP']
@@ -102,8 +102,8 @@ module RightScale
           Chef::Log.info "Configuring with #{newmaster_host} logfile #{newmaster_logfile} position #{newmaster_position}"
 
           # legacy did this twice, looks like slave stop can fail once (only throws warning if slave is already stopped)
-          RightScale::Database::PostgreSQL::Helper.do_query(node, "STOP SLAVE", hostname)
-          RightScale::Database::PostgreSQL::Helper.do_query(node, "STOP SLAVE", hostname)
+          RightScale::Database::PostgreSQL::Helper.do_query("STOP SLAVE", hostname)
+          RightScale::Database::PostgreSQL::Helper.do_query("STOP SLAVE", hostname)
 
           cmd = "CHANGE MASTER TO MASTER_HOST='#{newmaster_host}'"
           cmd = cmd +          ", MASTER_LOG_FILE='#{newmaster_logfile}'"
@@ -112,12 +112,12 @@ module RightScale
           # don't log replication user and password
           cmd = cmd +          ", MASTER_USER='#{node[:db][:replication][:user]}'"
           cmd = cmd +          ", MASTER_PASSWORD='#{node[:db][:replication][:password]}'"
-          RightScale::Database::PostgreSQL::Helper.do_query(node, cmd, hostname, username)
+          RightScale::Database::PostgreSQL::Helper.do_query(cmd, hostname, username)
 
-          RightScale::Database::PostgreSQL::Helper.do_query(node, "START SLAVE", hostname, username)
+          RightScale::Database::PostgreSQL::Helper.do_query("START SLAVE", hostname, username)
           started=false
           10.times do
-            row = RightScale::Database::PostgreSQL::Helper.do_query(node, "SHOW SLAVE STATUS", hostname)
+            row = RightScale::Database::PostgreSQL::Helper.do_query("SHOW SLAVE STATUS", hostname)
             slave_IO = row["Slave_IO_Running"].strip.downcase
             slave_SQL = row["Slave_SQL_Running"].strip.downcase
             if( slave_IO == "yes" and slave_SQL == "yes" ) then
