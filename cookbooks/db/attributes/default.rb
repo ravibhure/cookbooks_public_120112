@@ -19,8 +19,7 @@ set_unless[:db][:backup][:lineage] = ""
 #
 # Server state variables
 #
-#set_unless[:db][:init_status] = :uninitialized  # Checks if DB has been initialezed
-set_unless[:db][:init_status] = :initialized  # Checks if DB has been initialezed
+set_unless[:db][:init_status] = :uninitialized  # Checks if DB has been initialezed
 #set_unless[:db][:this_is_master] = false
 set_unless[:db][:this_is_master] = true
 set_unless[:db][:current_master_uuid] = nil
