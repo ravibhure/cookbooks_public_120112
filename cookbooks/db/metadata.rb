@@ -17,6 +17,7 @@ recipe "db::default", "Adds the database:active=true tag to your server which id
 recipe  "db::install_client", "Installs the database client onto the VM so that it can connect to a running server.  It should be set up on all database servers and servers intended to connect to the servers."
 
 recipe  "db::install_server", "Installs and sets up the packages that are required for database servers."
+recipe  "db::setup_block_device", "This will initialize your database onto a block device that supports backup and restore operations.."
 
 recipe  "db::setup_monitoring", "Installs the collectd plugin for database monitoring support, which is required to enable monitoring and alerting functionality for your servers."
 
@@ -145,6 +146,7 @@ attribute "db/backup/lineage",
     "db::do_init_and_become_master",
     "db::do_backup",
     "db::do_restore",
+    "db::setup_block_device",
     "db::do_backup_schedule_enable",
     "db::do_backup_schedule_disable",
     "db::do_force_reset",
