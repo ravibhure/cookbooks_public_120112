@@ -35,16 +35,16 @@ module RightScale
           node[:db_postgres][:mycnf_uuid]
         end
 
-        #def init(new_resource)
-        #  begin
-        #    require 'rightscale_tools'
-        #  rescue LoadError
-        #    Chef::Log.warn("This database cookbook requires our premium 'rightscale_tools' gem.")
-        #    Chef::Log.warn("Please contact Rightscale to upgrade your account.")
-        #  end
-        #  mount_point = new_resource.name
-        #  RightScale::Tools::Database.factory(:postgres, new_resource.user, new_resource.password, mount_point, Chef::Log)
-        #end
+        def init(new_resource)
+          begin
+            require 'rightscale_tools'
+          rescue LoadError
+            Chef::Log.warn("This database cookbook requires our premium 'rightscale_tools' gem.")
+            Chef::Log.warn("Please contact Rightscale to upgrade your account.")
+          end
+          mount_point = new_resource.name
+          RightScale::Tools::Database.factory(:postgres, new_resource.user, new_resource.password, mount_point, Chef::Log)
+        end
 
         def self.load_replication_info(node)
           loadfile = ::File.join(node[:db][:data_dir], SNAPSHOT_POSITION_FILENAME)
