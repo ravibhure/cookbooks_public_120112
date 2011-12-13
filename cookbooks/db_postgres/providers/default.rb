@@ -58,7 +58,7 @@ end
 
 action :write_backup_info do
   masterstatus = Hash.new
-  masterstatus = RightScale::Database::PostgreSQL::Helper.do_query('select version()')
+  masterstatus = RightScale::Database::PostgreSQL::Helper.do_query('SELECT NOW()')
   masterstatus['Master_IP'] = node[:db][:current_master_ip]
   masterstatus['Master_instance_uuid'] = node[:db][:current_master_uuid]
  # slavestatus = RightScale::Database::PostgreSQL::Helper.do_query('SHOW SLAVE STATUS')
