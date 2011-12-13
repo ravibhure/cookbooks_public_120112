@@ -82,10 +82,9 @@ end
 
 action :post_restore_cleanup do
   @db = init(new_resource)
-  @db.symlink_datadir("/var/lib/pgsql", node[:db][:data_dir])
+  @db.restore_snapshot
   # TODO: used for replication
   # @db.post_restore_sanity_check
-  @db.post_restore_cleanup
 end
 
 action :pre_backup_check do
