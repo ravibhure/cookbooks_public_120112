@@ -57,19 +57,19 @@ action :reset do
 end
 
 action :write_backup_info do
- # masterstatus = Hash.new
- # masterstatus = RightScale::Database::PostgreSQL::Helper.do_query(node, 'select version()')
- # masterstatus['Master_IP'] = node[:db][:current_master_ip]
- # masterstatus['Master_instance_uuid'] = node[:db][:current_master_uuid]
+  masterstatus = Hash.new
+  masterstatus = RightScale::Database::PostgreSQL::Helper.do_query(node, 'select version()')
+  masterstatus['Master_IP'] = node[:db][:current_master_ip]
+  masterstatus['Master_instance_uuid'] = node[:db][:current_master_uuid]
  # slavestatus = RightScale::Database::PostgreSQL::Helper.do_query(node, 'SHOW SLAVE STATUS')
  # slavestatus ||= Hash.new
- # if node[:db][:this_is_master]
-    Chef::Log.info "Backing up Master info"
- # else
- #   Chef::Log.info "Backing up slave replication status"
+  if node[:db][:this_is_master]
+   Chef::Log.info "Backing up Master info"
+  else
+    Chef::Log.info "Backing up slave replication status"
 #    masterstatus['File'] = slavestatus['Relay_Master_Log_File']
 #    masterstatus['Position'] = slavestatus['Exec_Master_Log_Pos']
- # end
+  end
   Chef::Log.info "Saving master info...:\n#{masterstatus.to_yaml}"
   ::File.open(::File.join(node[:db][:data_dir], RightScale::Database::PostgreSQL::Helper::SNAPSHOT_POSITION_FILENAME), ::File::CREAT|::File::TRUNC|::File::RDWR) do |out|
     YAML.dump(masterstatus, out)
