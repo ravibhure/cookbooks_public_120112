@@ -11,6 +11,7 @@ depends "rs_utils"
 depends "block_device"
 
 recipe  "db_postgres::default", "Runs the client 'db::install_client' recipes."
+recipe  "db_postgres::test_rb", "Runs the client 'db_postgres::test_rb' recipe to restore sample database"
 
 attribute "db_postgres",
   :display_name => "General Database Options",

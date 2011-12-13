@@ -377,7 +377,7 @@ action :restore_from_dump_file do
     end
   end
 
-  bash "Import MySQL dump file: #{dumpfile}" do
+  bash "Import PostgreSQL dump file: #{dumpfile}" do
     user "postgres"
     code <<-EOH
       set -e
