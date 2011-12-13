@@ -67,8 +67,6 @@ action :write_backup_info do
    Chef::Log.info "Backing up Master info"
   else
     Chef::Log.info "Backing up slave replication status"
-#    masterstatus['File'] = slavestatus['Relay_Master_Log_File']
-#    masterstatus['Position'] = slavestatus['Exec_Master_Log_Pos']
   end
   Chef::Log.info "Saving master info...:\n#{masterstatus.to_yaml}"
   ::File.open(::File.join(node[:db][:data_dir], RightScale::Database::PostgreSQL::Helper::SNAPSHOT_POSITION_FILENAME), ::File::CREAT|::File::TRUNC|::File::RDWR) do |out|
