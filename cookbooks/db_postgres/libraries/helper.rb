@@ -102,7 +102,7 @@ module RightScale
           Chef::Log.info "Configuring with #{newmaster_host} logfile #{newmaster_logfile} position #{newmaster_position}"
 
           # legacy did this twice, looks like slave stop can fail once (only throws warning if slave is already stopped)
-          RightScale::Database::PostgreSQL::Helper.do_query("STOP SLAVE", hostname)
+          RightScale::Database::PostgreSQL::Helper.do_query("STOP SLAVE", hostname, username)
 
           cmd = "CHANGE MASTER TO MASTER_HOST='#{newmaster_host}'"
           cmd = cmd +          ", MASTER_LOG_FILE='#{newmaster_logfile}'"
@@ -116,7 +116,7 @@ module RightScale
           RightScale::Database::PostgreSQL::Helper.do_query("START SLAVE", hostname, username)
           started=false
           10.times do
-            row = RightScale::Database::PostgreSQL::Helper.do_query("SHOW SLAVE STATUS", hostname)
+            row = RightScale::Database::PostgreSQL::Helper.do_query("SHOW SLAVE STATUS", hostname, username)
             slave_IO = row["Slave_IO_Running"].strip.downcase
             slave_SQL = row["Slave_SQL_Running"].strip.downcase
             if( slave_IO == "yes" and slave_SQL == "yes" ) then
