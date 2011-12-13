@@ -103,7 +103,6 @@ module RightScale
 
           # legacy did this twice, looks like slave stop can fail once (only throws warning if slave is already stopped)
           RightScale::Database::PostgreSQL::Helper.do_query("STOP SLAVE", hostname)
-          RightScale::Database::PostgreSQL::Helper.do_query("STOP SLAVE", hostname)
 
           cmd = "CHANGE MASTER TO MASTER_HOST='#{newmaster_host}'"
           cmd = cmd +          ", MASTER_LOG_FILE='#{newmaster_logfile}'"
