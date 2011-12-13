@@ -76,11 +76,11 @@ module RightScale
               result = nil
               if timeout
                 SystemTimer.timeout_after(timeout) do
-                  conn = get_pgsql_handle("localhost", nil, nil, nil, nil, "postgres", nil)
+                  conn = PGconn.open("localhost", nil, nil, nil, nil, "postgres", nil)
                   result = conn.exec(query)
                 end
               else
-                conn = get_pgsql_handle("localhost", nil, nil, nil, nil, "postgres", nil)
+                conn = PGconn.open("localhost", nil, nil, nil, nil, "postgres", nil)
                 result = conn.exec(query)
               end
               return result.get_result if result
