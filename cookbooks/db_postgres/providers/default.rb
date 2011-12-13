@@ -57,10 +57,11 @@ action :reset do
 end
 
 action :write_backup_info do
-  masterstatus = Hash.new
-  masterstatus = RightScale::Database::PostgreSQL::Helper.do_query('SELECT NOW()')
-  masterstatus['Master_IP'] = node[:db][:current_master_ip]
-  masterstatus['Master_instance_uuid'] = node[:db][:current_master_uuid]
+ # masterstatus = Hash.new
+ # masterstatus = RightScale::Database::PostgreSQL::Helper.do_query('SELECT NOW()')
+ # masterstatus['Master_IP'] = node[:db][:current_master_ip]
+ # masterstatus['Master_instance_uuid'] = node[:db][:current_master_uuid]
+   masterstatus = node[:db][:current_master_ip]
  # slavestatus = RightScale::Database::PostgreSQL::Helper.do_query('SHOW SLAVE STATUS')
  # slavestatus ||= Hash.new
   if node[:db][:this_is_master]
