@@ -7,6 +7,9 @@
 
 rs_utils_marker :begin
 
+log "  Setting database state to 'initialized'..."
+db_init_status :set
+
 log "  Checking if state of db is 'uninitialized'..."
 db_init_status :check
 

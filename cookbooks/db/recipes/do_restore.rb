@@ -39,6 +39,11 @@ db DATA_DIR do
 end
 
 log "  Performing Restore..."
+
+log "======== TIMESTAMP ========="
+log node[:db][:backup][:timestamp_override]
+log "======== TIMESTAMP ========="
+
 # Requires block_device node[:db][:block_device] to be instantiated
 # previously. Make sure block_device::default recipe has been run.
 block_device DATA_DIR do
