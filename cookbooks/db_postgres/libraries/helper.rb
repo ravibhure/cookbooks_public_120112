@@ -83,7 +83,7 @@ module RightScale
                 conn = PGconn.open("localhost", nil, nil, nil, nil, "postgres", nil)
                 result = conn.exec(query)
               end
-              return result.get_result if result
+              return result.getvalue(0,0) if result
               return result
             rescue Timeout::Error => e
               Chef::Log.info("Timeout occured during pgsql query:#{e}")
