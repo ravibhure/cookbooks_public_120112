@@ -39,7 +39,7 @@ define :db_postgres_set_privileges, :preset => "administrator", :username => nil
       require 'rubygems'
       Gem.clear_paths
       require 'pg'
-
+	sleep 25
 	conn = PGconn.open("localhost", nil, nil, nil, nil, "postgres", nil)
 
       # Now that we have a Postgresql object, let's santize our inputs
