@@ -7,6 +7,7 @@ version          "0.0.1"
 
 depends "app"
 depends "db_mysql"
+depends "db_postgres"
 depends "repo_git"
 depends "rs_utils"
 
@@ -18,9 +19,18 @@ recipe  "app_tomcat::setup_tomcat_application_vhost", "Set up the application vh
 attribute "tomcat",
   :display_name => "Tomcat Application Settings",
   :type => "hash"
+
+attribute "tomcat/db_adapter",
+  :display_name => "Database Adapter",
+  :description => "Database adapter to connect to Database. (Ex: mysql)",
+  :default => "postgres",
+  :choice => [ "mysql", "postgres" ],
+  :recipes => [ "app_tomcat::default", "app_tomcat::setup_db_connection" ]
+
 #
 # optional attributes
 #
+
 attribute "tomcat/db_name",
   :display_name => "Database Name",
   :description => "Enter the name of the MySQL database to use. Ex: mydatabase",

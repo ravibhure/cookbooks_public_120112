@@ -42,4 +42,14 @@ db_mysql_connect_app File.join(node[:web_apache][:docroot], "config", "db.php") 
   group node[:php][:app_user]
 end
 
+# Tell PostgreSQL to fill in our connection template
+db_postgres_connect_app File.join(node[:web_apache][:docroot], "config", "db.php") do
+  template "db.php.erb"
+  cookbook "app_php"
+  database node[:php][:db_schema_name]
+  owner node[:php][:app_user]
+  group node[:php][:app_user]
+end
+
+
 rs_utils_marker :end

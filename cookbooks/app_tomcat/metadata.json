@@ -1,12 +1,21 @@
 {
-  "dependencies": {
-    "db_mysql": ">= 0.0.0",
-    "app": ">= 0.0.0",
-    "repo_git": ">= 0.0.0",
-    "rs_utils": ">= 0.0.0"
+  "platforms": {
   },
-  "name": "app_tomcat",
-  "maintainer_email": "support@rightscale.com",
+  "description": "Installs the tomcat application server.",
+  "suggestions": {
+  },
+  "conflicting": {
+  },
+  "recipes": {
+    "app_tomcat::setup_tomcat_application_vhost": "Set up the application vhost on port 8000.",
+    "app_tomcat::setup_db_connection": "Set up the MySQL database db.tomcat connection file.",
+    "app_tomcat::do_update_code": "Update application source files from the remote repository.",
+    "app_tomcat::default": "Installs the tomcat application server."
+  },
+  "long_description": "= RightScale App Tomcat Cookbook (Beta)\n\n== DESCRIPTION:\n\n== DETAILS:\n\n== REQUIREMENTS:\n\n== SETUP: \n\n== USAGE:\n\n== KNOWN LIMITATIONS:\n",
+  "providing": {
+  },
+  "version": "0.0.1",
   "attributes": {
     "tomcat/db_name": {
       "required": "required",
@@ -18,8 +27,8 @@
       "recipes": [
         "app_tomcat::setup_db_connection"
       ],
-      "description": "Enter the name of the MySQL database to use. Ex: mydatabase",
-      "display_name": "Database Name"
+      "display_name": "Database Name",
+      "description": "Enter the name of the MySQL database to use. Ex: mydatabase"
     },
     "tomcat/code": {
       "required": "optional",
@@ -45,8 +54,8 @@
         "app_tomcat::do_update_code",
         "app_tomcat::default"
       ],
-      "description": "The name of the branch within the git repository where the application code should be pulled from. Ex: mybranch",
-      "display_name": "Repository Branch"
+      "display_name": "Repository Branch",
+      "description": "The name of the branch within the git repository where the application code should be pulled from. Ex: mybranch"
     },
     "tomcat/code/url": {
       "required": "required",
@@ -59,8 +68,24 @@
         "app_tomcat::do_update_code",
         "app_tomcat::default"
       ],
-      "description": "Specify the URL location of the repository that contains the application code. Ex: git://github.com/mysite/myapp.git",
-      "display_name": "Repository URL"
+      "display_name": "Repository URL",
+      "description": "Specify the URL location of the repository that contains the application code. Ex: git://github.com/mysite/myapp.git"
+    },
+    "tomcat/db_adapter": {
+      "required": "optional",
+      "calculated": false,
+      "choice": [
+        "mysql",
+        "postgres"
+      ],
+      "default": "postgres",
+      "type": "string",
+      "recipes": [
+        "app_tomcat::default",
+        "app_tomcat::setup_db_connection"
+      ],
+      "display_name": "Database Adapter",
+      "description": "Database adapter to connect to Database. (Ex: mysql)"
     },
     "tomcat/code/credentials": {
       "required": "optional",
@@ -73,8 +98,8 @@
         "app_tomcat::do_update_code",
         "app_tomcat::default"
       ],
-      "description": "The private SSH key of the git repository.",
-      "display_name": "Repository Credentials"
+      "display_name": "Repository Credentials",
+      "description": "The private SSH key of the git repository."
     },
     "tomcat": {
       "required": "optional",
@@ -89,29 +114,31 @@
       "display_name": "Tomcat Application Settings"
     }
   },
-  "license": "Apache v2.0",
-  "suggestions": {
-  },
-  "platforms": {
-  },
   "maintainer": "RightScale, Inc.",
-  "long_description": "= RightScale App Tomcat Cookbook (Beta)\n\n== DESCRIPTION:\n\n== DETAILS:\n\n== REQUIREMENTS:\n\n== SETUP: \n\n== USAGE:\n\n== KNOWN LIMITATIONS:\n",
-  "version": "0.0.1",
-  "recommendations": {
-  },
-  "recipes": {
-    "app_tomcat::setup_tomcat_application_vhost": "Set up the application vhost on port 8000.",
-    "app_tomcat::setup_db_connection": "Set up the MySQL database db.tomcat connection file.",
-    "app_tomcat::do_update_code": "Update application source files from the remote repository.",
-    "app_tomcat::default": "Installs the tomcat application server."
-  },
-  "groupings": {
-  },
-  "conflicting": {
-  },
   "replacing": {
   },
-  "description": "Installs the tomcat application server.",
-  "providing": {
+  "license": "Apache v2.0",
+  "maintainer_email": "support@rightscale.com",
+  "name": "app_tomcat",
+  "groupings": {
+  },
+  "dependencies": {
+    "db_mysql": [
+
+    ],
+    "app": [
+
+    ],
+    "db_postgres": [
+
+    ],
+    "repo_git": [
+
+    ],
+    "rs_utils": [
+
+    ]
+  },
+  "recommendations": {
   }
 }

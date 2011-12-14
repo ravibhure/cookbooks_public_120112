@@ -33,7 +33,7 @@ set_unless[:php][:code][:url] = ""
 set_unless[:php][:code][:credentials] = ""
 set_unless[:php][:code][:branch] = "master"  
 set_unless[:php][:modules_list] = [] 
-set_unless[:php][:db_adapter] = "mysql"
+set_unless[:php][:db_adapter] = ""
 
 # == Calculated attributes
 #
@@ -41,14 +41,21 @@ set_unless[:php][:db_adapter] = "mysql"
 
 case platform
 when "ubuntu", "debian"
-  set[:php][:package_dependencies] = ["php5", "php5-mysql", "php-pear", "libapache2-mod-php5"] 
+  set[:php][:package_dependencies] = ["php5", "php5-mysql", "php5-pgsql", "php-pear", "libapache2-mod-php5"] 
   set[:php][:module_dependencies] = [ "proxy_http", "php5"]
   set_unless[:php][:app_user] = "www-data"
-  set[:db_mysql][:socket] = "/var/run/mysqld/mysqld.sock"
+  if("#{php[:db_adapter]}" = "mysql")
+    set[:db_mysql][:socket] = "/var/run/mysqld/mysqld.sock"
+  else
+    set[:db_postgres][:socket] = "/var/run/postgresql"
+  end
 when "centos","fedora","suse","redhat"
-  set[:php][:package_dependencies] = ["php53u", "php53u-mysql", "php53u-pear", "php53u-zts"]
+  set[:php][:package_dependencies] = ["php53u", "php53u-mysql", "php53u-pgsql", "php53u-pear", "php53u-zts"]
   set[:php][:module_dependencies] = [ "proxy", "proxy_http" ]
   set_unless[:php][:app_user] = "apache"
-  set[:db_mysql][:socket] = "/var/lib/mysql/mysql.sock"
+  if("#{php[:db_adapter]}" = "mysql")
+    set[:db_mysql][:socket] = "/var/lib/mysql/mysql.sock"
+  else
+    set[:db_postgres][:socket] = "/var/run/postgresql"
+  end
 end
-

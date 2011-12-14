@@ -42,5 +42,3 @@ define :db_postgres_connect_app, :template => "db_connection_example.erb", :cook
   end
 
 end
-
-

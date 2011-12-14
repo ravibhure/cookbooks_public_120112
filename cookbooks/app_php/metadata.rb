@@ -8,6 +8,7 @@ version          "0.0.1"
 depends "app"
 depends "web_apache"
 depends "db_mysql"
+depends "db_postgres"
 depends "repo_git"
 depends "rs_utils"
  
@@ -19,6 +20,14 @@ recipe  "app_php::setup_php_application_vhost", "Set up the application vhost on
 attribute "php",
   :display_name => "PHP Application Settings",
   :type => "hash"
+
+attribute "php/db_adapter",
+  :display_name => "Database Adapter",
+  :description => "Database adapter to connect to Database. (Ex: mysql)",
+  :default => "postgres",
+  :choice => [ "mysql", "postgres" ],
+  :recipes => [ "app_php::default" ]
+
 #
 # optional attributes
 #
@@ -31,7 +40,7 @@ attribute "php/modules_list",
 
 attribute "php/db_schema_name",
   :display_name => "Database Schema Name",
-  :description => "Enter the name of the MySQL database schema to which applications will connect.  The database schema was created when the initial database was first set up.  This input will be used to set the application server's database config file so that applications can connect to the correct schema within the database.  This input is also used for MySQL dump backups in order to determine which schema will be backed up.  Ex: mydbschema",
+  :description => "Enter the name of the MySQL/PostgreSQL database schema to which applications will connect.  The database schema was created when the initial database was first set up.  This input will be used to set the application server's database config file so that applications can connect to the correct schema within the database.  This input is also used for MySQL/PostgreSQL dump backups in order to determine which schema will be backed up.  Ex: mydbschema",
   :required => false,
   :recipes => [ "app_php::setup_db_connection"  ]
 

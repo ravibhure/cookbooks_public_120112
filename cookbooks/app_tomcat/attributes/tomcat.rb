@@ -8,7 +8,7 @@ set_unless[:tomcat][:application_name] = "myapp"
 set_unless[:tomcat][:code][:url] = ""
 set_unless[:tomcat][:code][:credentials] = ""
 set_unless[:tomcat][:code][:branch] = "master"  
-set_unless[:tomcat][:db_adapter] = "mysql"
+set_unless[:tomcat][:db_adapter] = ""
 
 # this docroot is currently symlinked from /usr/share/tomcat6/webapps
 set[:tomcat][:docroot] = "/srv/tomcat6/webapps"
@@ -18,15 +18,31 @@ set[:tomcat][:docroot] = "/srv/tomcat6/webapps"
 
 case platform
 when "ubuntu", "debian"
-  set[:db_mysql][:socket] = "/var/run/mysqld/mysqld.sock"
+  if("#{tomcat[:db_adapter]}" = "mysql")
+    set[:db_mysql][:socket] = "/var/run/mysqld/mysqld.sock"
+  else
+    set[:db_postgres][:socket] = "/var/run/postgresql"
 when "centos","fedora","suse","redhat"
-  set[:tomcat][:package_dependencies] = ["eclipse-ecj",\
+  if("#{tomcat[:db_adapter]}" = "mysql")
+    set[:tomcat][:package_dependencies] = ["eclipse-ecj",\
                                          "tomcat6",\
                                          "tomcat6-admin-webapps",\
                                          "tomcat6-webapps",\
                                          "tomcat-native",\
                                          "mysql-connector-java"]
+  else
+    set[:tomcat][:package_dependencies] = ["eclipse-ecj",\
+                                         "tomcat6",\
+                                         "tomcat6-admin-webapps",\
+                                         "tomcat6-webapps",\
+                                         "tomcat-native",\
+                                         "postgresql-9.1-901.jdbc4"]
+  end
   set[:tomcat][:module_dependencies] = [ "proxy", "proxy_http" ]
   set_unless[:tomcat][:app_user] = "tomcat"
-  set[:db_mysql][:socket] = "/var/lib/mysql/mysql.sock"
+  if("#{tomcat[:db_adapter]}" = "mysql")
+    set[:tomcat][:socket] = "/var/lib/mysql/mysql.sock"
+  else
+    set[:tomcat][:socket] = "/var/run/postgresql"
+  end	
 end
