@@ -56,6 +56,25 @@ action :reset do
   @db.reset
 end
 
+action :firewall_update_request do
+  sys_firewall "Request database open port 5432 (PostgreSQL) to this server" do
+    machine_tag new_resource.machine_tag
+    port 5432
+    enable new_resource.enable
+    ip_addr new_resource.ip_addr
+    action :update_request
+  end
+end
+
+action :firewall_update do
+  sys_firewall "Request database open port 5432 (PostgrSQL) to this server" do
+    machine_tag new_resource.machine_tag
+    port 5432
+    enable new_resource.enable
+    action :update
+  end
+end
+
 action :write_backup_info do
  # masterstatus = Hash.new
  # masterstatus = RightScale::Database::PostgreSQL::Helper.do_query('SELECT NOW()')
