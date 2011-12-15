@@ -1,9 +1,14 @@
-#File created by chef 
- 
-<%= node[:rails][:env] %>: 
+#File created by chef
+
+<%= node[:rails][:env] %>:
+ <% if node[:rails][:db_adapter] = mysql -%>
  adapter: mysql
+ socket:  <%= node[:db_mysql][:socket] %>
+ <% else -%>
+ adapter: postgresql
+ socket:  <%= node[:db_postgres][:socket] %>
+ <% end -%>
  host:  <%= node[:rails][:db_dns_name] %>
  username: <%= node[:rails][:db_app_user] %>
  password:  <%= node[:rails][:db_app_passwd] %>
  database:  <%= node[:rails][:db_schema_name] %>
- socket:  <%= node[:db_mysql][:socket] %>

@@ -39,7 +39,7 @@ define :db_postgres_set_privileges, :preset => "administrator", :username => nil
       require 'rubygems'
       Gem.clear_paths
       require 'pg'
-	sleep 25
+	sleep 20
 	conn = PGconn.open("localhost", nil, nil, nil, nil, "postgres", nil)
 
       # Now that we have a Postgresql object, let's santize our inputs
@@ -49,7 +49,8 @@ define :db_postgres_set_privileges, :preset => "administrator", :username => nil
       case priv_preset
       when 'administrator'
       # Create group roles, don't error out if already created.  Users don't inherit "special" attribs
-      # from group role, see: http://www.postgresql.org/docs/9.1/static/role-membership.html
+      # from group role, see: http://www.postgresql.org/docs/9.1/static/role-membership.html 
+      # cmd ==> createuser -h /var/run/postgresql -U postgres #{admin_role} -sdril 
         conn.exec("CREATE ROLE #{admin_role} SUPERUSER CREATEDB CREATEROLE INHERIT LOGIN")
       
       # Enable admin/replication user
@@ -61,16 +62,19 @@ define :db_postgres_set_privileges, :preset => "administrator", :username => nil
       when 'user'
       # Create group roles, don't error out if already created.  Users don't inherit "special" attribs
       # from group role, see: http://www.postgresql.org/docs/9.1/static/role-membership.html
+      # cmd ==> createuser -h /var/run/postgresql -U postgres #{user_role} -SdRil 
         conn.exec("CREATE ROLE #{user_role} NOSUPERUSER CREATEDB NOCREATEROLE INHERIT LOGIN")
       
-      # Set default privileges for any future tables, sequences, or functions created.
-        conn.exec("ALTER DEFAULT PRIVILEGES FOR ROLE #{user_role} GRANT ALL ON TABLES to #{user_role}")
-        conn.exec("ALTER DEFAULT PRIVILEGES FOR ROLE #{user_role} GRANT ALL ON SEQUENCES to #{user_role}")
-        conn.exec("ALTER DEFAULT PRIVILEGES FOR ROLE #{user_role} GRANT ALL ON FUNCTIONS to #{user_role}")
       
       # Enable application user  
         conn.exec("CREATE USER #{username} ENCRYPTED PASSWORD '#{password}'")
         conn.exec("GRANT #{user_role} TO #{username}")
+
+      # Set default privileges for any future tables, sequences, or functions created.
+        conn.exec("ALTER DEFAULT PRIVILEGES FOR ROLE #{user_role} GRANT ALL ON TABLES to #{user_role}")
+        conn.exec("ALTER DEFAULT PRIVILEGES FOR ROLE #{user_role} GRANT ALL ON SEQUENCES to #{user_role}")
+        conn.exec("ALTER DEFAULT PRIVILEGES FOR ROLE #{user_role} GRANT ALL ON FUNCTIONS to #{user_role}")
+
       else
         raise "only 'administrator' and 'user' type presets are supported!"
       end

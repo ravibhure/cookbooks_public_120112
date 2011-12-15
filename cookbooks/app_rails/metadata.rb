@@ -11,6 +11,7 @@ depends "passenger_apache2::mod_rails"
 depends "mysql::client"
 depends "repo_git"
 depends "db_mysql"
+depends "db_postgres"
 depends "rs_utils"
  
 recipe  "app_rails::default", "Runs app_rails::install_rails."
@@ -22,6 +23,13 @@ recipe  "app_rails::setup_db_config", "Configures the Rails database.yml file."
 attribute "rails",
   :display_name => "Rails Passenger Settings",
   :type => "hash"
+
+attribute "rails/db_adapter",
+  :display_name => "Database Adapter",
+  :description => "Database adapter to connect to Database. (Ex: mysql)",
+  :default => "postgres",
+  :choice => [ "mysql", "postgres" ],
+  :recipes => [ "app_rails::default" ]
 
 #
 # Rails Database configuration vars  

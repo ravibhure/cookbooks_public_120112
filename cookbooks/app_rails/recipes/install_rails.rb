@@ -28,6 +28,7 @@ include_recipe "web_apache"
 include_recipe "rails"
 include_recipe "passenger_apache2::mod_rails"
 include_recipe "mysql::client"
+include_recipe "db_postgres::install_client"
 
 # install optional gems required for the application
 node[:rails][:gems_list].each { |gem| gem_package gem } unless "#{node[:rails][:gems_list]}" == ""

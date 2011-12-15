@@ -33,7 +33,7 @@ set_unless[:rails][:code][:branch] = "master"
 set_unless[:rails][:application_port] = "8000"    
 set_unless[:rails][:spawn_method] = "conservative"
 set_unless[:rails][:gems_list] = ""
-set_unless[:rails][:db_adapter] = "mysql"
+set_unless[:rails][:db_adapter] = ""
 
 #
 # Calculated attributes
