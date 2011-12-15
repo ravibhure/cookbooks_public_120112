@@ -17,7 +17,7 @@ set_unless[:rails][:db_app_passwd] = ""
 set_unless[:rails][:db_schema_name] = ""      
 set_unless[:rails][:db_dns_name] = "" 
 
-set_unless[:rails][:db_dumpfile_path] = ""         
+set_unless[:rails][:db_dump_file_path] = ""         
 
 #
 # Recommended attributes

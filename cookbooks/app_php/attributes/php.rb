@@ -44,7 +44,7 @@ when "ubuntu", "debian"
   set[:php][:package_dependencies] = ["php5", "php5-mysql", "php5-pgsql", "php-pear", "libapache2-mod-php5"] 
   set[:php][:module_dependencies] = [ "proxy_http", "php5"]
   set_unless[:php][:app_user] = "www-data"
-  if("#{php[:db_adapter]}" = "mysql")
+  if(php[:db_adapter] == "mysql")
     set[:db_mysql][:socket] = "/var/run/mysqld/mysqld.sock"
   else
     set[:db_postgres][:socket] = "/var/run/postgresql"
@@ -53,7 +53,7 @@ when "centos","fedora","suse","redhat"
   set[:php][:package_dependencies] = ["php53u", "php53u-mysql", "php53u-pgsql", "php53u-pear", "php53u-zts"]
   set[:php][:module_dependencies] = [ "proxy", "proxy_http" ]
   set_unless[:php][:app_user] = "apache"
-  if("#{php[:db_adapter]}" = "mysql")
+  if(php[:db_adapter] == "mysql")
     set[:db_mysql][:socket] = "/var/lib/mysql/mysql.sock"
   else
     set[:db_postgres][:socket] = "/var/run/postgresql"

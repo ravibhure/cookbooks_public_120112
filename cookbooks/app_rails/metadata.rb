@@ -85,9 +85,9 @@ attribute "rails/application_name",
   :default => "myapp",
   :recipes => ["app_rails::install_rails", "app_rails::default" ]
   
-attribute "rails/db_mysqldump_file_path",
-  :display_name => "Mysqldump File Path",
-  :description => "This input allows you to restore your database by choosing a specific MySQL database backup file.  You will need to specify a full path and/or filename.  Ex: branch/mydb-200910300402.gz",
+attribute "rails/db_dump_file_path",
+  :display_name => "Database dump File Path",
+  :description => "This input allows you to restore your database by choosing a specific MySQL/PostgreSQL database backup file.  You will need to specify a full path and/or filename.  Ex: branch/mydb-200910300402.gz",
   :recipes => ["app_rails::do_db_restore"]
 
 
