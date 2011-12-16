@@ -31,8 +31,8 @@ define :db_postgres_set_privileges, :preset => "administrator", :username => nil
   password = params[:password]
   db_name = "*.*"
   db_name = "#{params[:db_name]}.*" if params[:db_name]
-  admin_role = params[:preset]
-  user_role = "users"
+#  admin_role = params[:preset]
+#  user_role = "users"
 
   ruby_block "set admin credentials" do
     block do
@@ -71,9 +71,9 @@ define :db_postgres_set_privileges, :preset => "administrator", :username => nil
       #  conn.exec("GRANT #{user_role} TO #{username}")
 
       # Set default privileges for any future tables, sequences, or functions created.
-        conn.exec("ALTER DEFAULT PRIVILEGES FOR ROLE #{user_role} GRANT ALL ON TABLES to #{user_role}")
-        conn.exec("ALTER DEFAULT PRIVILEGES FOR ROLE #{user_role} GRANT ALL ON SEQUENCES to #{user_role}")
-        conn.exec("ALTER DEFAULT PRIVILEGES FOR ROLE #{user_role} GRANT ALL ON FUNCTIONS to #{user_role}")
+        conn.exec("ALTER DEFAULT PRIVILEGES FOR USER #{username} GRANT ALL ON TABLES to #{username}")
+        conn.exec("ALTER DEFAULT PRIVILEGES FOR USER #{username} GRANT ALL ON SEQUENCES to #{username}")
+        conn.exec("ALTER DEFAULT PRIVILEGES FOR USER #{username} GRANT ALL ON FUNCTIONS to #{username}")
 
       else
         raise "only 'administrator' and 'user' type presets are supported!"
