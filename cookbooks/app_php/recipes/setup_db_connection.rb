@@ -53,6 +53,6 @@ else
     owner node[:php][:app_user]
     group node[:php][:app_user]
   end
-end 
+end
 
 rs_utils_marker :end

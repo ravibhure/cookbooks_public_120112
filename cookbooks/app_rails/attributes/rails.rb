@@ -1,6 +1,6 @@
 # Cookbook Name:: app_rails
 #
-# Copyright 2009, RightScale, Inc.
+# Copyright 2011, RightScale, Inc.
 #
 # All rights reserved - Do Not Redistribute
 #
@@ -17,7 +17,7 @@ set_unless[:rails][:db_app_passwd] = ""
 set_unless[:rails][:db_schema_name] = ""      
 set_unless[:rails][:db_dns_name] = "" 
 
-set_unless[:rails][:db_dump_file_path] = ""         
+set_unless[:rails][:db_dumpfile_path] = ""         
 
 #
 # Recommended attributes

@@ -61,6 +61,19 @@
       ],
       "display_name": "Rails Passenger Settings"
     },
+    "rails/db_mysqldump_file_path": {
+      "required": "optional",
+      "calculated": false,
+      "choice": [
+
+      ],
+      "type": "string",
+      "recipes": [
+        "app_rails::do_db_restore"
+      ],
+      "display_name": "Mysqldump File Path",
+      "description": "This input allows you to restore your database by choosing a specific MySQL database backup file.  You will need to specify a full path and/or filename.  Ex: branch/mydb-200910300402.gz"
+    },
     "rails/gems_list": {
       "required": "optional",
       "calculated": false,
@@ -200,19 +213,6 @@
       ],
       "display_name": "Database Adapter",
       "description": "Database adapter to connect to Database. (Ex: mysql)"
-    },
-    "rails/db_dump_file_path": {
-      "required": "optional",
-      "calculated": false,
-      "choice": [
-
-      ],
-      "type": "string",
-      "recipes": [
-        "app_rails::do_db_restore"
-      ],
-      "display_name": "Database dump File Path",
-      "description": "This input allows you to restore your database by choosing a specific MySQL/PostgreSQL database backup file.  You will need to specify a full path and/or filename.  Ex: branch/mydb-200910300402.gz"
     },
     "rails/code": {
       "required": "optional",

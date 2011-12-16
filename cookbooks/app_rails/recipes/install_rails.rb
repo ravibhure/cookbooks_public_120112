@@ -1,7 +1,7 @@
 # Cookbook Name:: app_rails
 # Recipe:: install_rails
 #
-# Copyright (c) 2009 RightScale Inc
+# Copyright (c) 2011 RightScale Inc
 #
 # Permission is hereby granted, free of charge, to any person obtaining
 # a copy of this software and associated documentation files (the
@@ -29,7 +29,7 @@ include_recipe "rails"
 include_recipe "passenger_apache2::mod_rails"
 
 db_adapter = node[:rails][:db_adapter]
-# runs db client only on db_adapter selection
+# run db client only on db_adapter
 if db_adapter == "mysql"
   include_recipe "mysql::client"
 else
