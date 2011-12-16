@@ -27,8 +27,14 @@ rs_utils_marker :begin
 include_recipe "web_apache"
 include_recipe "rails"
 include_recipe "passenger_apache2::mod_rails"
-include_recipe "mysql::client"
-include_recipe "db_postgres::install_client"
+
+db_adapter = node[:rails][:db_adapter]
+# runs db client only on db_adapter selection
+if db_adapter == "mysql"
+  include_recipe "mysql::client"
+else
+  include_recipe "db_postgres::install_client"
+end  
 
 # install optional gems required for the application
 node[:rails][:gems_list].each { |gem| gem_package gem } unless "#{node[:rails][:gems_list]}" == ""
