@@ -1,7 +1,7 @@
 #File created by chef
 
 <%= node[:rails][:env] %>:
- <% if node[:rails][:db_adapter] = mysql -%>
+ <% if node[:rails][:db_adapter] == "mysql" -%>
  adapter: mysql
  socket:  <%= node[:db_mysql][:socket] %>
  <% else -%>
