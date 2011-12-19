@@ -22,6 +22,7 @@ when "ubuntu", "debian"
     set[:db_mysql][:socket] = "/var/run/mysqld/mysqld.sock"
   else
     set[:db_postgres][:socket] = "/var/run/postgresql"
+  end  
 when "centos","fedora","suse","redhat"
   if(tomcat[:db_adapter] == "mysql")
     set[:tomcat][:package_dependencies] = ["eclipse-ecj",\
