@@ -305,7 +305,7 @@ action :grant_replication_slave do
   conn.exec("CREATE USER #{node[:db][:replication][:user]} SUPERUSER CREATEDB CREATEROLE INHERIT LOGIN ENCRYPTED PASSWORD '#{node[:db][:replication][:password]}'")
   conn.close
   # Setup pg_hba.conf for replication user allow
-  RightScale::Database::PostgreSQL::Helper.configure_pg_hba(localhost)
+  RightScale::Database::PostgreSQL::Helper.configure_pg_hba(node)
 end
 
 action :setup_monitoring do
