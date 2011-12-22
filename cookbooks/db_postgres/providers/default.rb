@@ -76,13 +76,13 @@ action :firewall_update do
 end
 
 action :write_backup_info do
- # masterstatus = Hash.new
- # masterstatus = RightScale::Database::PostgreSQL::Helper.do_query('SELECT NOW()')
- # masterstatus['Master_IP'] = node[:db][:current_master_ip]
- # masterstatus['Master_instance_uuid'] = node[:db][:current_master_uuid]
+ masterstatus = Hash.new
+ masterstatus = RightScale::Database::PostgreSQL::Helper.do_query('SELECT pg_current_xlog_location()')
+ masterstatus['Master_IP'] = node[:db][:current_master_ip]
+ masterstatus['Master_instance_uuid'] = node[:db][:current_master_uuid]
    masterstatus = node[:db][:current_master_ip]
- # slavestatus = RightScale::Database::PostgreSQL::Helper.do_query('SHOW SLAVE STATUS')
- # slavestatus ||= Hash.new
+ slavestatus = RightScale::Database::PostgreSQL::Helper.do_query('select pg_last_xlog_receive_location()')
+  slavestatus ||= Hash.new
   if node[:db][:this_is_master]
    Chef::Log.info "Backing up Master info"
   else
@@ -102,7 +102,6 @@ end
 action :post_restore_cleanup do
   @db = init(new_resource)
   @db.restore_snapshot
-  # TODO: used for replication
   # @db.post_restore_sanity_check
 end
 
@@ -174,10 +173,6 @@ action :install_client do
   #
   # Also installs in compile phase
   #
-  #r = execute "install pg gem" do
-  #  command "/opt/rightscale/sandbox/bin/gem install pg -- --with-pg-config=/usr/pgsql-9.1/bin/pg_config"
-  #end
-  #r.run_action(:run)
   execute "install pg gem" do
     command "/opt/rightscale/sandbox/bin/gem install pg -- --with-pg-config=/usr/pgsql-9.1/bin/pg_config"
   end
@@ -301,7 +296,6 @@ action :grant_replication_slave do
   require 'rubygems'
   Gem.clear_paths
   require 'pg'
-  admin_role = node[:db_postgres][:admin_role]
   
   Chef::Log.info "GRANT REPLICATION SLAVE to #{node[:db][:replication][:user]}"
   # Opening connection for pg operation
@@ -309,9 +303,9 @@ action :grant_replication_slave do
   
   # Enable admin/replication user
   conn.exec("CREATE USER #{node[:db][:replication][:user]} SUPERUSER CREATEDB CREATEROLE INHERIT LOGIN ENCRYPTED PASSWORD '#{node[:db][:replication][:password]}'")
-  # Grant role previleges to admin/replication user
-  # conn.exec("GRANT #{admin_role} TO #{node[:db][:replication][:user]}")
   conn.close
+  # Setup pg_hba.conf for replication user allow
+  RightScale::Database::PostgreSQL::Helper.configure_pg_hba(localhost)
 end
 
 action :setup_monitoring do

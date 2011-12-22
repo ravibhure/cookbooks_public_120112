@@ -52,6 +52,14 @@ module RightScale
           YAML::load_file(loadfile)
         end
 
+        # Configure the replication parameters into pg_hba.conf.
+        def self.configure_pg_hba(hostname)
+          File.open("/var/lib/pgsql/9.1/data/pg_hba.conf", a) do |f|
+            f.puts("host    replication     '#{node[:db][:replication][:user]}'        0.0.0.0/0            trust")
+          end
+          return $? == 0
+        end
+
         def self.get_pgsql_handle(hostname = "localhost", username = "postgres")
           info_msg = "PostgreSQL connection to #{hostname}"
           info_msg << ": opening NEW PostgreSQL connection."
