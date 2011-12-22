@@ -55,7 +55,7 @@ module RightScale
         # Configure the replication parameters into pg_hba.conf.
         def self.configure_pg_hba(node)
           File.open("/var/lib/pgsql/9.1/data/pg_hba.conf", "a") do |f|
-            f.puts("host    replication     '#{node[:db][:replication][:user]}'        0.0.0.0/0            trust")
+            f.puts("host    replication     #{node[:db][:replication][:user]}        0.0.0.0/0            trust")
           end
           return $? == 0
         end

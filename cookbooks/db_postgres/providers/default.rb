@@ -306,6 +306,9 @@ action :grant_replication_slave do
   conn.close
   # Setup pg_hba.conf for replication user allow
   RightScale::Database::PostgreSQL::Helper.configure_pg_hba(node)
+
+  # Reload postgresql to read new updated pg_hba.conf
+   RightScale::Database::PostgreSQL::Helper.do_query('select pg_reload_conf()')
 end
 
 action :setup_monitoring do
