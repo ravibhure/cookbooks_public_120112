@@ -311,6 +311,59 @@ action :grant_replication_slave do
    RightScale::Database::PostgreSQL::Helper.do_query('select pg_reload_conf()')
 end
 
+action :promote do
+  # stopping postgresql
+  action_stop
+  
+  # Setup postgresql.conf
+  template "#{node[:db_postgres][:confdir]}/postgresql.conf" do
+    source "postgresql.conf.erb"
+    owner "postgres"
+    group "postgres"
+    mode "0644"
+    cookbook 'db_postgres'
+  end
+
+  # Setup pg_hba.conf
+  template "#{node[:db_postgres][:confdir]}/pg_hba.conf" do
+    source "pg_hba.conf.erb"
+    owner "postgres"
+    group "postgres"
+    mode "0644"
+    cookbook 'db_postgres'
+  end
+
+  previous_master = node[:db][:current_master_ip]
+  raise "FATAL: could not determine master host from slave status" if previous_master.nil?
+  Chef::Log.info "host: #{previous_master}}"
+  
+  # PHASE1: contains non-critical old master operations, if a timeout or
+  # error occurs we continue promotion assuming the old master is dead.
+
+  begin
+  # Critical operations on newmaster, if a failure occurs here we allow it to halt promote operations
+  # <Ravi - Do your stuff here> 
+
+  ### INITIAL CHECKS 
+  # Perform an initial connection forcing to accept the keys...to avoid interaction.
+    @db = init(new_resource)
+    @db.accept_ssh_key("localhost")
+
+  # Ensure that that the newmaster DB is up
+    action_start
+  
+  # Promote the slave into the new master  
+    Chef::Log.info "Promoting slave.."
+    @db.write_trigger()
+  
+  # Let the new slave loose and thus let him become the new master
+    Chef::Log.info  "New master is ReadWrite."
+    
+  rescue => e
+    Chef::Log.info "WARNING: caught exception #{e} during critical operations on the MASTER"
+  end
+end
+
 action :setup_monitoring do
   service "collectd" do
     action :nothing
