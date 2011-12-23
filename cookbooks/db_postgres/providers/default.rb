@@ -305,6 +305,53 @@ action :grant_replication_slave do
    RightScale::Database::PostgreSQL::Helper.do_query('select pg_reload_conf()')
 end
 
+action :enable_replication do
+
+# Sync to Master data
+@db.rsync_db(newmaster)
+
+# Setup recovery conf
+@db.reconfigure_replication_info(newmaster)
+
+service "postgresql-9.1" do
+    action :stop
+end
+
+ruby_block "wipe_existing_runtime_config" do
+  block do
+    Chef::Log.info "Wiping existing runtime config files"
+    data_dir = ::File.join(node[:db][:data_dir], 'pg_xlog')
+    files_to_delete = [ "*"]
+    files_to_delete.each do |file|
+      expand = Dir.glob(::File.join(data_dir,file))
+      unless expand.empty?
+        expand.each do |exp_file|
+          FileUtils.rm_rf(exp_file)
+        end
+      end
+    end
+  end
+end
+
+# ensure_db_started
+# service provider uses the status command to decide if it
+# has to run the start command again.
+5.times do
+  action_start
+end
+
+  ruby_block "validate_backup" do
+    block do
+      master_info = RightScale::Database::PostgreSQL::Helper.load_replication_info(node)
+      raise "Position and file not saved!" unless master_info['Master_instance_uuid']
+      # Check that the snapshot is from the current master or a slave associated with the current master
+        if master_info['Master_instance_uuid'] != node[:db][:current_master_uuid]
+        raise "FATAL: snapshot was taken from a different master! snap_master was:#{master_info['Master_instance_uuid']} != current master: #{node[:db][:current_master_uuid]}"
+        end
+      end
+   end
+end
+
 action :promote do
   # stopping postgresql
   action_stop
@@ -340,8 +387,7 @@ action :promote do
 
   ### INITIAL CHECKS 
   # Perform an initial connection forcing to accept the keys...to avoid interaction.
-    @db = init(new_resource)
-    @db.accept_ssh_key("localhost")
+    @db.accept_ssh_key(newmaster)
 
   # Ensure that that the newmaster DB is up
     action_start
