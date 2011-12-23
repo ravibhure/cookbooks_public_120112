@@ -307,22 +307,25 @@ end
 
 action :enable_replication do
 
-newmaster = node[:db][:current_master_ip]
+newmaster_host = node[:db][:current_master_ip]
+rep_user = node[:db][:replication][:user]
+rep_pass = node[:db][:replication][:password]
+
 
 master_info = RightScale::Database::PostgreSQL::Helper.load_replication_info(node)
-newmaster_host = master_info['Master_IP']
+#newmaster_host = master_info['Master_IP']
 
 
 # Sync to Master data
-#@db.rsync_db(newmaster)
-RightScale::Database::PostgreSQL::Helper.rsync_db(newmaster)
-
-# Setup recovery conf
-#@db.reconfigure_replication_info(newmaster)
-RightScale::Database::PostgreSQL::Helper.reconfigure_replication_info(newmaster)
+#@db.rsync_db(newmaster_host)
+# RightScale::Database::PostgreSQL::Helper.rsync_db(newmaster_host)
 
 # Stopping postgresql
 action_stop
+
+# Setup recovery conf
+#@db.reconfigure_replication_info(newmaster)
+RightScale::Database::PostgreSQL::Helper.reconfigure_replication_info(newmaster_host, rep_user, rep_pass)
 
 ruby_block "wipe_existing_runtime_config" do
   block do
