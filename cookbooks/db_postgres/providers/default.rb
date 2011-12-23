@@ -77,14 +77,9 @@ end
 
 action :write_backup_info do
   masterstatus = Hash.new
-#  masterstatus = RightScale::Database::PostgreSQL::Helper.do_query('SELECT pg_current_xlog_location()')
-  masterstatus = node[:db][:current_master_ip] 
-  masterstatus['Master_IP'] = node[:db][:current_master_ip]
-  masterstatus['Master_instance_uuid'] = node[:db][:current_master_uuid]
-#  slavestatus = RightScale::Database::PostgreSQL::Helper.do_query('pg_last_xlog_receive_location()')
-#  slavestatus ||= Hash.new
+  masterstatus = node[:db][:current_master_ip]
   if node[:db][:this_is_master]
-    Chef::Log.info "Backing up Master info"
+   Chef::Log.info "Backing up Master info"
   else
     Chef::Log.info "Backing up slave replication status"
   end
@@ -359,9 +354,9 @@ end
       master_info = RightScale::Database::PostgreSQL::Helper.load_replication_info(node)
       raise "Position and file not saved!" unless master_info['Master_instance_uuid']
       # Check that the snapshot is from the current master or a slave associated with the current master
-        if master_info['Master_instance_uuid'] != node[:db][:current_master_uuid]
-        raise "FATAL: snapshot was taken from a different master! snap_master was:#{master_info['Master_instance_uuid']} != current master: #{node[:db][:current_master_uuid]}"
-        end
+#        if master_info['Master_instance_uuid'] != node[:db][:current_master_uuid]
+#        raise "FATAL: snapshot was taken from a different master! snap_master was:#{master_info['Master_instance_uuid']} != current master: #{node[:db][:current_master_uuid]}"
+#        end
       end
    end
 end
