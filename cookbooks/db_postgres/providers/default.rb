@@ -328,7 +328,8 @@ RightScale::Database::PostgreSQL::Helper.reconfigure_replication_info(newmaster_
 
 # Removing existing_runtime_log_files
   Chef::Log.info "Removing existing runtime log files"
-  Dir.glob(::File.join(node[:db][:datadir], 'pg_xlog', '**')).each {|dir|FileUtils.rm_rf(dir)}
+#  Dir.glob(::File.join(node[:db][:datadir], 'pg_xlog', '**')).each {|dir|FileUtils.rm_rf(dir)}
+  `rm -rf "#{node[:db][:datadir]}/pg_xlog/*"`
 
 # @db.ensure_db_started
 # service provider uses the status command to decide if it

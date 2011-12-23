@@ -109,6 +109,7 @@ module RightScale
             f.puts("standby_mode='on'\nprimary_conninfo='host=#{newmaster_host} user=#{rep_user} password=#{rep_pass}'\ntrigger_file='/var/lib/pgsql/9.1/data/recovery.trigger'")
           end
           return $? == 0
+	 `chown postgres:postgres /var/lib/pgsql/9.1/data/recovery.conf` 
         end
 
         def self.rsync_db(newmaster_host = nil, rep_user = nil)
