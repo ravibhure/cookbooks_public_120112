@@ -60,7 +60,7 @@ module RightScale
           return $? == 0
         end
 
-        def self.get_pgsql_handle(node, hostname = "localhost", username = "postgres")
+        def self.get_pgsql_handle(hostname = "localhost", username = "postgres")
           info_msg = "PostgreSQL connection to #{hostname}"
           info_msg << ": opening NEW PostgreSQL connection."
           conn = PGconn.open("localhost", nil, nil, nil, nil, "postgres", nil)
@@ -70,7 +70,7 @@ module RightScale
           return conn
         end
 
-        def self.do_query(node, query, hostname = 'localhost', username = 'postgres', timeout = nil, tries = 1)
+        def self.do_query(query, hostname = 'localhost', username = 'postgres', timeout = nil, tries = 1)
           require 'rubygems'
           Gem.clear_paths
           require 'pg'

@@ -77,10 +77,10 @@ end
 
 action :write_backup_info do
   masterstatus = Hash.new
-  masterstatus = RightScale::Database::PostgreSQL::Helper.do_query(node, 'SELECT pg_current_xlog_location()')
+  masterstatus = RightScale::Database::PostgreSQL::Helper.do_query('SELECT pg_current_xlog_location()')
   masterstatus['Master_IP'] = node[:db][:current_master_ip]
   masterstatus['Master_instance_uuid'] = node[:db][:current_master_uuid]
-  slavestatus = RightScale::Database::PostgreSQL::Helper.do_query(node, 'pg_last_xlog_receive_location()')
+  slavestatus = RightScale::Database::PostgreSQL::Helper.do_query('pg_last_xlog_receive_location()')
   slavestatus ||= Hash.new
   if node[:db][:this_is_master]
     Chef::Log.info "Backing up Master info"
