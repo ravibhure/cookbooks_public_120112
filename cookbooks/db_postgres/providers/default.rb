@@ -309,13 +309,8 @@ action :enable_replication do
 
 newmaster = node[:db][:current_master_ip]
 
-  ruby_block "reconfigure_replication" do
-    block do
-      master_info = RightScale::Database::PostgreSQL::Helper.load_replication_info(node)
-      newmaster_host = master_info['Master_IP']
-#      RightScale::Database::PostgreSQL::Helper.reconfigure_replication(node, 'localhost', newmaster_host, newmaster_logfile, newmaster_position)
-    end
-  end
+master_info = RightScale::Database::PostgreSQL::Helper.load_replication_info(node)
+newmaster_host = master_info['Master_IP']
 
 
 # Sync to Master data
