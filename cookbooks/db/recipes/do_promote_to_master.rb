@@ -10,7 +10,7 @@ rs_utils_marker :begin
 # == Verify initalized database
 # Check the node state to verify that we have correctly initialized this server.
 #
-db_state_assert :slave
+# db_state_assert :slave # commented by ravi
 
 # == Open port for slave replication by old-master
 #
@@ -23,11 +23,14 @@ end
 # == Promote to master
 # Do promote, but do not change master tags or node state yet.
 #
-include_recipe "db::setup_replication_privileges"
+# include_recipe "db::setup_replication_privileges"  # commented by ravi
 
 db node[:db][:data_dir] do
   action :promote
 end
+
+# Added new line - Ravi
+include_recipe "db::setup_replication_privileges" 
 
 # == Schedule backups on slave
 # This should be done before calling db::do_lookup_master 

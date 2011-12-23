@@ -351,29 +351,11 @@ end
 
 action :promote do
   # stopping postgresql
-  action_stop
-  
-  # Setup postgresql.conf
-  template "#{node[:db_postgres][:confdir]}/postgresql.conf" do
-    source "postgresql.conf.erb"
-    owner "postgres"
-    group "postgres"
-    mode "0644"
-    cookbook 'db_postgres'
-  end
+#  action_stop
 
-  # Setup pg_hba.conf
-  template "#{node[:db_postgres][:confdir]}/pg_hba.conf" do
-    source "pg_hba.conf.erb"
-    owner "postgres"
-    group "postgres"
-    mode "0644"
-    cookbook 'db_postgres'
-  end
-
-  previous_master = node[:db][:current_master_ip]
-  raise "FATAL: could not determine master host from slave status" if previous_master.nil?
-  Chef::Log.info "host: #{previous_master}}"
+#  previous_master = node[:db][:current_master_ip]
+#  raise "FATAL: could not determine master host from slave status" if previous_master.nil?
+#  Chef::Log.info "host: #{previous_master}}"
   
   # PHASE1: contains non-critical old master operations, if a timeout or
   # error occurs we continue promotion assuming the old master is dead.
@@ -387,7 +369,7 @@ action :promote do
     #db.accept_ssh_key(newmaster)
 
   # Ensure that that the newmaster DB is up
-    action_start
+#    action_start
   
   # Promote the slave into the new master  
     Chef::Log.info "Promoting slave.."
