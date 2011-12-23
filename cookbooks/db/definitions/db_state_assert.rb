@@ -20,7 +20,6 @@ define :db_state_assert do
       type = params[:name]
       master_ip = node[:db][:current_master_ip]
       master_uuid = node[:db][:current_master_uuid]
-      Chef::Log.info "master ip: #{master_ip} and master_uuid = #{master_uuid}"
       raise "No master DB set.  Is this database initialized as a #{type.to_s}?" unless master_ip && master_uuid
       raise "FATAL: this slave thinks its master!" if node[:db][:this_is_master] && type == :slave
       raise "FATAL: this server is not a master!" if (node[:db][:this_is_master] == false) && type == :master
