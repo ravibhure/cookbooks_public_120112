@@ -387,14 +387,14 @@ action :promote do
 
   ### INITIAL CHECKS 
   # Perform an initial connection forcing to accept the keys...to avoid interaction.
-    @db.accept_ssh_key(newmaster)
+    db.accept_ssh_key(newmaster)
 
   # Ensure that that the newmaster DB is up
     action_start
   
   # Promote the slave into the new master  
     Chef::Log.info "Promoting slave.."
-    @db.write_trigger()
+    db.write_trigger()
   
   # Let the new slave loose and thus let him become the new master
     Chef::Log.info  "New master is ReadWrite."
