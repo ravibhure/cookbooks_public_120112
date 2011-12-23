@@ -111,7 +111,7 @@ module RightScale
           return $? == 0
         end
 
-        def self.rsync_db(newmaster_host)
+        def self.rsync_db(newmaster_host = nil, rep_user = nil)
           puts `su - postgres -c "env PGCONNECT_TIMEOUT=30 /usr/pgsql-9.1/bin/pg_basebackup -D /var/lib/pgsql/9.1/backups -U #{rep_user} -h #{newmaster_host}"`
           puts `su - postgres -c "rsync -av /var/lib/pgsql/9.1/backups/ /var/lib/pgsql/9.1/data --exclude postgresql.conf --exclude pg_hba.conf"`
           return $? == 0
