@@ -326,14 +326,9 @@ action_stop
 # Setup recovery conf
 RightScale::Database::PostgreSQL::Helper.reconfigure_replication_info(newmaster_host, rep_user, rep_pass)
 
-  ruby_block "wipe_existing_runtime_config" do
-    block do
-      Chef::Log.info "Wiping existing runtime config files"
-      require 'fileutils'
-      remove_files = ::File.join(node[:db][:data_dir], 'pg_xlog', '*')
-      FileUtils.rm_rf(remove_files)
-      end
-  end
+# Removing existing_runtime_log_files
+  Chef::Log.info "Removing existing runtime log files"
+  Dir.glob(::File.join(node[:db][:datadir], 'pg_xlog', '**')).each {|dir|FileUtils.rm_rf(dir)}
 
 # @db.ensure_db_started
 # service provider uses the status command to decide if it
