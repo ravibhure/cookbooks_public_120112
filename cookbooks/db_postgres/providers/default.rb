@@ -352,7 +352,7 @@ end
 
 action :promote do
   previous_master = node[:db][:current_master_ip]
-#  raise "FATAL: could not determine master host from slave status" if previous_master.nil?
+  # raise "FATAL: could not determine master host from slave status" if previous_master.nil?
   Chef::Log.info "host: #{previous_master}}"
   
   # PHASE1: contains non-critical old master operations, if a timeout or

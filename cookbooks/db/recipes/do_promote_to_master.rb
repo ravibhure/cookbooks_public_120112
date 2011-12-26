@@ -23,6 +23,7 @@ end
 # == Promote to master
 # Do promote, but do not change master tags or node state yet.
 #
+# pg slave is in read-only mode and doesn't create user/role
 # include_recipe "db::setup_replication_privileges"  # commented by ravi
 
 db node[:db][:data_dir] do
