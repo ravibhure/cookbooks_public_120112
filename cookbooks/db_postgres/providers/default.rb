@@ -237,24 +237,8 @@ action :install_server do
     recursive true
   end
 
-
-  # Setup postgresql.conf
-  template "#{node[:db_postgres][:confdir]}/postgresql.conf" do
-    source "postgresql.conf.erb"
-    owner "postgres"
-    group "postgres"
-    mode "0644"
-    cookbook 'db_postgres'
-  end
-
-  # Setup pg_hba.conf
-  template "#{node[:db_postgres][:confdir]}/pg_hba.conf" do
-    source "pg_hba.conf.erb"
-    owner "postgres"
-    group "postgres"
-    mode "0644"
-    cookbook 'db_postgres'
-  end
+  # Setting up postgresql-9.1 config files
+  action_setup_config
 
   # == Setup PostgreSQL user limits
   #
@@ -285,6 +269,28 @@ action :install_server do
     action :start
   end
     
+end
+
+action :setup_config do
+
+  # Setup postgresql.conf
+  template "#{node[:db_postgres][:confdir]}/postgresql.conf" do
+    source "postgresql.conf.erb"
+    owner "postgres"
+    group "postgres"
+    mode "0644"
+    cookbook 'db_postgres'
+  end
+
+  # Setup pg_hba.conf
+  template "#{node[:db_postgres][:confdir]}/pg_hba.conf" do
+    source "pg_hba.conf.erb"
+    owner "postgres"
+    group "postgres"
+    mode "0644"
+    cookbook 'db_postgres'
+  end
+
 end
 
 action :grant_replication_slave do
@@ -354,7 +360,7 @@ action :promote do
   previous_master = node[:db][:current_master_ip]
   # raise "FATAL: could not determine master host from slave status" if previous_master.nil?
   Chef::Log.info "host: #{previous_master}}"
-  
+
   # PHASE1: contains non-critical old master operations, if a timeout or
   # error occurs we continue promotion assuming the old master is dead.
 
