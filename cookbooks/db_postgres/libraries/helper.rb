@@ -106,7 +106,7 @@ module RightScale
 
         def self.reconfigure_replication_info(newmaster_host = nil, rep_user = nil, rep_pass = nil)
           File.open("/var/lib/pgsql/9.1/data/recovery.conf", File::CREAT|File::TRUNC|File::RDWR) do |f|
-            f.puts("standby_mode='on'\nprimary_conninfo='host=#{newmaster_host} user=#{rep_user} password=#{rep_pass}'\ntrigger_file='/var/lib/pgsql/9.1/data/recovery.trigger'")
+            f.puts("standby_mode='on'\nprimary_conninfo='host=#{newmaster_host} user=#{rep_user} password=#{rep_pass} application_name=#{node[:rightscale][:instance_uuid]}'\ntrigger_file='/var/lib/pgsql/9.1/data/recovery.trigger'")
 	 `chown postgres:postgres /var/lib/pgsql/9.1/data/recovery.conf` 
           end
           return $? == 0
