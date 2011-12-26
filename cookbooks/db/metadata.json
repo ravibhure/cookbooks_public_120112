@@ -20,7 +20,7 @@
     "db::request_master_deny": "Sends a request to the master database server tagged with rs_dbrepl:master_instance_uuid=<master_instance_uuid> to deny connections from the server's private IP address.  This script should be run on a slave when it stops replicating.",
     "db::setup_replication_privileges": "Set up privileges for MySQL replication slaves.",
     "db::do_secondary_backup": "Creates a backup of the database and uploads it to a secondary cloud storage location, which can be used to migrate your database to a different cloud.  For example, you can save a secondary backup to an AWS S3 bucket or a Rackspace CloudFiles container.",
-    "db::setup_block_device": "This will initialize your database onto a block device that supports backup and restore operations..",
+    "db::setup_block_device": "This will initialize your database onto a block device that supports backup and restore operations.",
     "db::default": "Adds the database:active=true tag to your server which identifies it as an database server. The tag is used by application servers to identify active databases. It also loads the required 'db' resources.",
     "db::do_secondary_restore": "Restores the database from the most recently completed backup available in a secondary location.",
     "db::do_backup": "Creates a backup of the database using persistent storage in the current cloud.  On Rackspace, LVM backups are uploaded to the specified CloudFiles container.  For all other clouds, volume snapshots (like EBS) are used.",
@@ -288,12 +288,12 @@
         "db::do_init_and_become_master",
         "db::do_backup",
         "db::do_restore",
-        "db::setup_block_device",
         "db::do_backup_schedule_enable",
         "db::do_backup_schedule_disable",
         "db::do_force_reset",
         "db::do_secondary_backup",
-        "db::do_secondary_restore"
+        "db::do_secondary_restore",
+        "db::setup_block_device"
       ],
       "display_name": "Backup Lineage",
       "description": "The prefix that will be used to name/locate the backup of a particular database."
