@@ -7,10 +7,10 @@
 
 # == Request postgresql.conf updated
 #
-db_postgres node[:db_postgres][:datadir] do
   # updates postgresql.conf for replication
+  Chef::Log.info "updates postgresql.conf for replication"
   RightScale::Database::PostgreSQL::Helper.configure_postgres_conf(node)
 
   # Reload postgresql to read new updated postgresql.conf
+  Chef::Log.info "Reload postgresql to read new updated postgresql.conf"
   RightScale::Database::PostgreSQL::Helper.do_query('select pg_reload_conf()')
-end
