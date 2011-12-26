@@ -72,11 +72,11 @@ db DATA_DIR do
   action :enable_replication
 end
 
-# Force a new backup
-db_do_backup "do force backup" do
-  force true
-end
+# Force a new backup  # Commmented By Ravi
+#db_do_backup "do force backup" do
+#  force true
+#end
 
-include_recipe "db::do_backup_schedule_enable"
+#include_recipe "db::do_backup_schedule_enable" # Commmented By Ravi
 
 rs_utils_marker :end

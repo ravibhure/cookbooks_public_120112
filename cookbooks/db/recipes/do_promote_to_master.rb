@@ -33,11 +33,11 @@ end
 # == Schedule backups on slave
 # This should be done before calling db::do_lookup_master 
 # changes current_master from old to new. 
-# 
-remote_recipe "enable slave backups on oldmaster" do
-  recipe "db::do_backup_schedule_enable"
-  recipients_tags "rs_dbrepl:master_instance_uuid=#{node[:db][:current_master_uuid]}"
-end
+# Commented By Ravi - 
+#remote_recipe "enable slave backups on oldmaster" do
+#  recipe "db::do_backup_schedule_enable"
+#  recipients_tags "rs_dbrepl:master_instance_uuid=#{node[:db][:current_master_uuid]}"
+#end
 
 # == Demote old master
 #
@@ -55,14 +55,14 @@ end
 #
 db_register_master
 
-# == force a backup # Commented By Ravi
+# == force a backup 
 #
-#db_do_backup "do force backup" do
-#  force true
-#end
+db_do_backup "do force backup" do
+  force true
+end
 
 # == Schedule master backups
 #
-# include_recipe "db::do_backup_schedule_enable" # Commented By Ravi
+include_recipe "db::do_backup_schedule_enable" 
 
 rs_utils_marker :end
