@@ -314,15 +314,21 @@ end
 
 action :enable_replication do
 
+  to_enable = new_resource.enable
   newmaster_host = node[:db][:current_master_ip]
   rep_user = node[:db][:replication][:user]
   rep_pass = node[:db][:replication][:password]
   app_name = node[:rightscale][:instance_uuid]
 
+  # Setup attributes
+  attrs = {:db_postgres => {:slave => Hash.new}}
+  attrs[:db_postgres][:slave][:sync] = (to_enable == true) ? "enable" : "disable"
+
   # Use RightNet to update postgresql config file on master db tagged servers
   #remote_recipe "Request config update" do
   #  recipe "db_postgres::setup_pgmaster"
   #  recipients_tags "rs_dbrepl:master_instance_uuid=#{node[:db][:current_master_uuid]}"
+  #  attributes attrs
   #end
 
   master_info = RightScale::Database::PostgreSQL::Helper.load_replication_info(node)
