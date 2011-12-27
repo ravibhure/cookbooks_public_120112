@@ -41,10 +41,13 @@ else
     cookbook 'db_postgres'
   end
   
-  sleep 5
   # Reload postgresql to read new updated postgresql.conf
   Chef::Log.info "Reload postgresql to read new updated postgresql.conf"
-  RightScale::Database::PostgreSQL::Helper.do_query('select pg_reload_conf()')
+  #RightScale::Database::PostgreSQL::Helper.do_query('select pg_reload_conf()')
+  execute "/etc/init.d/postgresql-9.1 reload" do
+    command "/etc/init.d/postgresql-9.1 reload" 
+  end
+
 end
 
 rs_utils_marker :end
