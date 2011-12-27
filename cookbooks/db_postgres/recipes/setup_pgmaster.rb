@@ -22,7 +22,12 @@ if node[:db_postgres][:slave][:sync] == "enable"
   Chef::Log.info "Reload postgresql to read new updated postgresql.conf"
   RightScale::Database::PostgreSQL::Helper.do_query('select pg_reload_conf()')
 else
-  log "Initialize slave to master in 'sync' state [skipped]"
+  # Disable sync state
+  action :setup_config
+  
+  # Reload postgresql to read new updated postgresql.conf
+  Chef::Log.info "Reload postgresql to read new updated postgresql.conf"
+  RightScale::Database::PostgreSQL::Helper.do_query('select pg_reload_conf()')
 end
 
 rs_utils_marker :end
