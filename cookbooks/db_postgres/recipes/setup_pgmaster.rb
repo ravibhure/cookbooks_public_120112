@@ -23,7 +23,23 @@ if node[:db_postgres][:slave][:sync] == "enable"
   RightScale::Database::PostgreSQL::Helper.do_query('select pg_reload_conf()')
 else
   # Disable sync state
-  action :setup_config
+  # Setup postgresql.conf
+  template "#{node[:db_postgres][:confdir]}/postgresql.conf" do
+    source "postgresql.conf.erb"
+    owner "postgres"
+    group "postgres"
+    mode "0644"
+    cookbook 'db_postgres'
+  end
+
+  # Setup pg_hba.conf
+  template "#{node[:db_postgres][:confdir]}/pg_hba.conf" do
+    source "pg_hba.conf.erb"
+    owner "postgres"
+    group "postgres"
+    mode "0644"
+    cookbook 'db_postgres'
+  end
   
   # Reload postgresql to read new updated postgresql.conf
   Chef::Log.info "Reload postgresql to read new updated postgresql.conf"
