@@ -314,40 +314,48 @@ end
 
 action :enable_replication do
 
-newmaster_host = node[:db][:current_master_ip]
-rep_user = node[:db][:replication][:user]
-rep_pass = node[:db][:replication][:password]
-app_name = node[:rightscale][:instance_uuid]
+  newmaster_host = node[:db][:current_master_ip]
+  rep_user = node[:db][:replication][:user]
+  rep_pass = node[:db][:replication][:password]
+  app_name = node[:rightscale][:instance_uuid]
 
-# Use RightNet to update postgresql config file on master db tagged servers
-remote_recipe "Request config update" do
-  recipe "db_postgres::setup_pgmaster"
-  recipients_tags "rs_dbrepl:master_instance_uuid=#{node[:db][:current_master_uuid]}"
-end
+  # Use RightNet to update postgresql config file on master db tagged servers
+  #remote_recipe "Request config update" do
+  #  recipe "db_postgres::setup_pgmaster"
+  #  recipients_tags "rs_dbrepl:master_instance_uuid=#{node[:db][:current_master_uuid]}"
+  #end
 
-master_info = RightScale::Database::PostgreSQL::Helper.load_replication_info(node)
-#newmaster_host = master_info['Master_IP']
+  master_info = RightScale::Database::PostgreSQL::Helper.load_replication_info(node)
+  #newmaster_host = master_info['Master_IP']
 
+  # == Set slave state
+  #
+  log "Setting up slave state..."
+  ruby_block "set slave state" do
+    block do
+      node[:db][:this_is_master] = false
+    end
+  end
 
-# Stopping postgresql
-action_stop
+  # Stopping postgresql
+  action_stop
 
-# Sync to Master data
- RightScale::Database::PostgreSQL::Helper.rsync_db(newmaster_host, rep_user)
+  # Sync to Master data
+   RightScale::Database::PostgreSQL::Helper.rsync_db(newmaster_host, rep_user)
 
-# Setup recovery conf
-RightScale::Database::PostgreSQL::Helper.reconfigure_replication_info(newmaster_host, rep_user, rep_pass, app_name)
+  # Setup recovery conf
+  RightScale::Database::PostgreSQL::Helper.reconfigure_replication_info(newmaster_host, rep_user, rep_pass, app_name)
 
-# Removing existing_runtime_log_files
-  Chef::Log.info "Removing existing runtime log files"
-  `rm -rf "#{node[:db][:datadir]}/pg_xlog/*"`
+  # Removing existing_runtime_log_files
+    Chef::Log.info "Removing existing runtime log files"
+    `rm -rf "#{node[:db][:datadir]}/pg_xlog/*"`
 
-# @db.ensure_db_started
-# service provider uses the status command to decide if it
-# has to run the start command again.
-5.times do
-  action_start
-end
+  # @db.ensure_db_started
+  # service provider uses the status command to decide if it
+  # has to run the start command again.
+  5.times do
+    action_start
+  end
 
   ruby_block "validate_backup" do
     block do
