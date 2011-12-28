@@ -54,7 +54,15 @@ define :db_postgres_set_privileges, :preset => "administrator", :username => nil
       # conn.exec("CREATE ROLE #{admin_role} SUPERUSER CREATEDB CREATEROLE INHERIT LOGIN")
       
       # Enable admin/replication user
-        conn.exec("CREATE USER #{username} SUPERUSER CREATEDB CREATEROLE INHERIT LOGIN ENCRYPTED PASSWORD '#{password}'")
+        result = conn.exec("SELECT COUNT(*) FROM pg_user WHERE usename='#{username}'")
+        userstat = result.getvalue(0,0)
+        if ( userstat == '1' )
+          Chef::Log.info "User #{username} already exists, updating user using current inputs"
+          conn.exec("ALTER USER #{username} SUPERUSER CREATEDB CREATEROLE INHERIT LOGIN ENCRYPTED PASSWORD '#{password}'")
+        else
+          Chef::Log.info "creating replication user #{username}"
+          conn.exec("CREATE USER #{username} SUPERUSER CREATEDB CREATEROLE INHERIT LOGIN ENCRYPTED PASSWORD '#{password}'")
+        end	
         
       # Grant role previleges to admin/replication user
       # conn.exec("GRANT #{admin_role} TO #{username}")
@@ -67,7 +75,15 @@ define :db_postgres_set_privileges, :preset => "administrator", :username => nil
       
       
       # Enable application user  
-        conn.exec("CREATE USER #{username} NOSUPERUSER CREATEDB NOCREATEROLE INHERIT LOGIN ENCRYPTED PASSWORD '#{password}'")
+        result = conn.exec("SELECT COUNT(*) FROM pg_user WHERE usename='#{username}'")
+        userstat = result.getvalue(0,0)
+        if ( userstat == '1' )
+          Chef::Log.info "User #{username} already exists, updating user using current inputs"
+          conn.exec("ALTER USER #{username} NOSUPERUSER CREATEDB NOCREATEROLE INHERIT LOGIN ENCRYPTED PASSWORD '#{password}'")
+        else
+          Chef::Log.info "creating replication user #{username}"
+          conn.exec("CREATE USER #{username} NOSUPERUSER CREATEDB NOCREATEROLE INHERIT LOGIN ENCRYPTED PASSWORD '#{password}'")
+        end      
       #  conn.exec("GRANT #{user_role} TO #{username}")
 
       # Set default privileges for any future tables, sequences, or functions created.

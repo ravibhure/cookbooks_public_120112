@@ -306,10 +306,10 @@ action :grant_replication_slave do
         result = conn.exec("SELECT COUNT(*) FROM pg_user WHERE usename='#{node[:db][:replication][:user]}'")
         userstat = result.getvalue(0,0)
         if ( userstat == '1' )
-          puts "User #{node[:db][:replication][:user]} already exists, updating user using current inputs"
+          Chef::Log.info "User #{node[:db][:replication][:user]} already exists, updating user using current inputs"
           conn.exec("ALTER USER #{node[:db][:replication][:user]} SUPERUSER CREATEDB CREATEROLE INHERIT LOGIN ENCRYPTED PASSWORD '#{node[:db][:replication][:password]}'")
         else
-          puts "creating replication user #{node[:db][:replication][:user]}"
+          Chef::Log.info "creating replication user #{node[:db][:replication][:user]}"
           conn.exec("CREATE USER #{node[:db][:replication][:user]} SUPERUSER CREATEDB CREATEROLE INHERIT LOGIN ENCRYPTED PASSWORD '#{node[:db][:replication][:password]}'")
           # Setup pg_hba.conf for replication user allow
           RightScale::Database::PostgreSQL::Helper.configure_pg_hba(node)
