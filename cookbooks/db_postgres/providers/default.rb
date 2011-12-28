@@ -238,7 +238,24 @@ action :install_server do
   end
 
   # Setting up postgresql-9.1 config files
-  action_setup_config
+  # Setup postgresql.conf
+  template "#{node[:db_postgres][:confdir]}/postgresql.conf" do
+    source "postgresql.conf.erb"
+    owner "postgres"
+    group "postgres"
+    mode "0644"
+    cookbook 'db_postgres'
+  end
+
+  # Setup pg_hba.conf
+  template "#{node[:db_postgres][:confdir]}/pg_hba.conf" do
+    source "pg_hba.conf.erb"
+    owner "postgres"
+    group "postgres"
+    mode "0644"
+    cookbook 'db_postgres'
+  end
+
 
   # == Setup PostgreSQL user limits
   #
@@ -271,50 +288,25 @@ action :install_server do
     
 end
 
-action :setup_config do
-
-  # Setup postgresql.conf
-  template "#{node[:db_postgres][:confdir]}/postgresql.conf" do
-    source "postgresql.conf.erb"
-    owner "postgres"
-    group "postgres"
-    mode "0644"
-    cookbook 'db_postgres'
-  end
-
-  # Setup pg_hba.conf
-  template "#{node[:db_postgres][:confdir]}/pg_hba.conf" do
-    source "pg_hba.conf.erb"
-    owner "postgres"
-    group "postgres"
-    mode "0644"
-    cookbook 'db_postgres'
-  end
-
-end
-
 action :grant_replication_slave do
   require 'rubygems'
   Gem.clear_paths
   require 'pg'
   
-  Chef::Log.info "GRANT REPLICATION SLAVE to #{node[:db][:replication][:user]}"
+  Chef::Log.info "GRANT REPLICATION SLAVE to user #{node[:db][:replication][:user]}"
   # Opening connection for pg operation
   conn = PGconn.open("localhost", nil, nil, nil, nil, "postgres", nil)
   
   # Enable admin/replication user
-#  conn.exec("CREATE USER #{node[:db][:replication][:user]} SUPERUSER CREATEDB CREATEROLE INHERIT LOGIN ENCRYPTED PASSWORD '#{node[:db][:replication][:password]}'")
   # Check if server is in read_only mode, if found skip this... 
-    only_if do
       res = conn.exec("show transaction_read_only")
-      whoiam = res.getvalue(0,0)
-      if whoiam == 'off'
+      slavestutus = res.getvalue(0,0)
+      if ( slavestatus == 'off' )
         Chef::Log.info "Detected Master server."
         conn.exec("CREATE USER #{node[:db][:replication][:user]} SUPERUSER CREATEDB CREATEROLE INHERIT LOGIN ENCRYPTED PASSWORD '#{node[:db][:replication][:password]}'")
       else
         Chef::Log.info "Do nothing, Detected read_only db or slave mode"
       end
-    end
   conn.finish
   # Setup pg_hba.conf for replication user allow
   RightScale::Database::PostgreSQL::Helper.configure_pg_hba(node)
