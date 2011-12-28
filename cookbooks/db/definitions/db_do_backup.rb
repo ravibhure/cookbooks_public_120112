@@ -38,7 +38,7 @@ define :db_do_backup, :force => false, :backup_type => "primary" do
 
   # == Verify initalized database
   # Check the node state to verify that we have correctly initialized this server.
-#  db_state_assert :either # Ravi
+  db_state_assert :either 
   
   log "  Performing pre-backup check..." 
   db DATA_DIR do

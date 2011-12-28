@@ -317,13 +317,14 @@ end
 
 action :enable_replication do
 
-  to_enable = new_resource.enable
   newmaster_host = node[:db][:current_master_ip]
   rep_user = node[:db][:replication][:user]
   rep_pass = node[:db][:replication][:password]
   app_name = node[:rightscale][:instance_uuid]
 
+  # starting mark for setup_pgmaster recipe
   # Setup attributes
+  to_enable = new_resource.enable
   attrs = {:db_postgres => {:slave => Hash.new}}
   attrs[:db_postgres][:slave][:sync] = (to_enable == true) ? "enable" : "disable"
 
@@ -333,6 +334,7 @@ action :enable_replication do
     recipients_tags "rs_dbrepl:master_instance_uuid=#{node[:db][:current_master_uuid]}"
     attributes attrs
   end
+  # stopping mark pgmaster recipe
 
   master_info = RightScale::Database::PostgreSQL::Helper.load_replication_info(node)
   #newmaster_host = master_info['Master_IP']
