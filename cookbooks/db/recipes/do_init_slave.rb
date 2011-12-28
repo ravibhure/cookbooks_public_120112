@@ -73,10 +73,10 @@ db DATA_DIR do
 end
 
 # Force a new backup  # Commmented By Ravi
-#db_do_backup "do force backup" do
-#  force true
-#end
+db_do_backup "do force backup" do
+  force true
+end
 
-#include_recipe "db::do_backup_schedule_enable" # Commmented By Ravi
+include_recipe "db::do_backup_schedule_enable" 
 
 rs_utils_marker :end

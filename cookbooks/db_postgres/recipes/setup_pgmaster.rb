@@ -21,7 +21,8 @@ if node[:db_postgres][:slave][:sync] == "enable"
   # Reload postgresql to read new updated postgresql.conf
   Chef::Log.info "Reload postgresql to read new updated postgresql.conf"
   RightScale::Database::PostgreSQL::Helper.do_query('select pg_reload_conf()')
-else
+
+elsif node[:db_postgres][:slave][:sync] == "disable"
   # Disable sync state
   # Setup postgresql.conf
   template "#{node[:db_postgres][:confdir]}/postgresql.conf" do
@@ -47,6 +48,9 @@ else
   execute "/etc/init.d/postgresql-9.1 reload" do
     command "/etc/init.d/postgresql-9.1 reload" 
   end
+
+else
+  log "Initialize slave to master in 'sync' state [skipped]"
 
 end
 
