@@ -10,7 +10,7 @@ rs_utils_marker :begin
 # == Verify initalized database
 # Check the node state to verify that we have correctly initialized this server.
 #
-# db_state_assert :slave # commented by ravi
+db_state_assert :slave 
 
 # == Open port for slave replication by old-master
 #
@@ -24,7 +24,7 @@ end
 # Do promote, but do not change master tags or node state yet.
 #
 # pg slave is in read-only mode and doesn't create user/role
-# include_recipe "db::setup_replication_privileges"  # commented by ravi
+include_recipe "db::setup_replication_privileges" 
 
 db node[:db][:data_dir] do
   action :promote
