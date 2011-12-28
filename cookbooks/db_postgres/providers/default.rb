@@ -303,11 +303,19 @@ action :grant_replication_slave do
       slavestatus = res.getvalue(0,0)
       if ( slavestatus == 'off' )
         Chef::Log.info "Detected Master server."
-        conn.exec("CREATE USER #{node[:db][:replication][:user]} SUPERUSER CREATEDB CREATEROLE INHERIT LOGIN ENCRYPTED PASSWORD '#{node[:db][:replication][:password]}'")
-  	# Setup pg_hba.conf for replication user allow
-  	RightScale::Database::PostgreSQL::Helper.configure_pg_hba(node)
-  	# Reload postgresql to read new updated pg_hba.conf
-   	RightScale::Database::PostgreSQL::Helper.do_query('select pg_reload_conf()')
+        result = conn.exec("SELECT COUNT(*) FROM pg_user WHERE usename='#{node[:db][:replication][:user]}'")
+        userstat = result.getvalue(0,0)
+        if ( userstat == '1' )
+          puts "User #{node[:db][:replication][:user]} already exists, updating user using current inputs"
+          conn.exec("ALTER USER #{node[:db][:replication][:user]} SUPERUSER CREATEDB CREATEROLE INHERIT LOGIN ENCRYPTED PASSWORD '#{node[:db][:replication][:password]}'")
+        else
+          puts "creating replication user #{node[:db][:replication][:user]}"
+          conn.exec("CREATE USER #{node[:db][:replication][:user]} SUPERUSER CREATEDB CREATEROLE INHERIT LOGIN ENCRYPTED PASSWORD '#{node[:db][:replication][:password]}'")
+          # Setup pg_hba.conf for replication user allow
+          RightScale::Database::PostgreSQL::Helper.configure_pg_hba(node)
+          # Reload postgresql to read new updated pg_hba.conf
+          RightScale::Database::PostgreSQL::Helper.do_query('select pg_reload_conf()')
+        end
       else
         Chef::Log.info "Do nothing, Detected read_only db or slave mode"
       end
