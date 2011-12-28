@@ -304,15 +304,15 @@ action :grant_replication_slave do
       if ( slavestatus == 'off' )
         Chef::Log.info "Detected Master server."
         conn.exec("CREATE USER #{node[:db][:replication][:user]} SUPERUSER CREATEDB CREATEROLE INHERIT LOGIN ENCRYPTED PASSWORD '#{node[:db][:replication][:password]}'")
+  	# Setup pg_hba.conf for replication user allow
+  	RightScale::Database::PostgreSQL::Helper.configure_pg_hba(node)
+  	# Reload postgresql to read new updated pg_hba.conf
+   	RightScale::Database::PostgreSQL::Helper.do_query('select pg_reload_conf()')
       else
         Chef::Log.info "Do nothing, Detected read_only db or slave mode"
       end
   conn.finish
-  # Setup pg_hba.conf for replication user allow
-  RightScale::Database::PostgreSQL::Helper.configure_pg_hba(node)
 
-  # Reload postgresql to read new updated pg_hba.conf
-   RightScale::Database::PostgreSQL::Helper.do_query('select pg_reload_conf()')
 end
 
 action :enable_replication do
@@ -324,20 +324,20 @@ action :enable_replication do
 
   # starting mark for setup_pgmaster recipe
   # Setup attributes
-  to_enable = new_resource.enable
-  attrs = {:db_postgres => {:slave => Hash.new}}
-  attrs[:db_postgres][:slave][:sync] = (to_enable == true) ? "enable" : "disable"
+  #to_enable = new_resource.enable
+  #attrs = {:db_postgres => {:slave => Hash.new}}
+  #attrs[:db_postgres][:slave][:sync] = (to_enable == true) ? "enable" : "disable"
 
   # Use RightNet to update postgresql config file on master db tagged servers
-  remote_recipe "Request config update" do
-    recipe "db_postgres::setup_pgmaster"
-    recipients_tags "rs_dbrepl:master_instance_uuid=#{node[:db][:current_master_uuid]}"
-    attributes attrs
-  end
+  # Not required in boot phase
+  #remote_recipe "Request config update" do
+  #  recipe "db_postgres::setup_pgmaster"
+  #  recipients_tags "rs_dbrepl:master_instance_uuid=#{node[:db][:current_master_uuid]}"
+  #  attributes attrs
+  #end
   # stopping mark pgmaster recipe
 
   master_info = RightScale::Database::PostgreSQL::Helper.load_replication_info(node)
-  #newmaster_host = master_info['Master_IP']
 
   # == Set slave state
   #
