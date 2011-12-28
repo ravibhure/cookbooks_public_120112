@@ -300,7 +300,7 @@ action :grant_replication_slave do
   # Enable admin/replication user
   # Check if server is in read_only mode, if found skip this... 
       res = conn.exec("show transaction_read_only")
-      slavestutus = res.getvalue(0,0)
+      slavestatus = res.getvalue(0,0)
       if ( slavestatus == 'off' )
         Chef::Log.info "Detected Master server."
         conn.exec("CREATE USER #{node[:db][:replication][:user]} SUPERUSER CREATEDB CREATEROLE INHERIT LOGIN ENCRYPTED PASSWORD '#{node[:db][:replication][:password]}'")
