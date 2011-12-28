@@ -303,8 +303,19 @@ action :grant_replication_slave do
   conn = PGconn.open("localhost", nil, nil, nil, nil, "postgres", nil)
   
   # Enable admin/replication user
-  conn.exec("CREATE USER #{node[:db][:replication][:user]} SUPERUSER CREATEDB CREATEROLE INHERIT LOGIN ENCRYPTED PASSWORD '#{node[:db][:replication][:password]}'")
-  conn.close
+#  conn.exec("CREATE USER #{node[:db][:replication][:user]} SUPERUSER CREATEDB CREATEROLE INHERIT LOGIN ENCRYPTED PASSWORD '#{node[:db][:replication][:password]}'")
+  # Check if server is in read_only mode, if found skip this... 
+    only_if do
+      res = conn.exec("show transaction_read_only")
+      whoiam = res.getvalue(0,0)
+      if whoiam == 'off'
+        Chef::Log.info "Detected Master server."
+        conn.exec("CREATE USER #{node[:db][:replication][:user]} SUPERUSER CREATEDB CREATEROLE INHERIT LOGIN ENCRYPTED PASSWORD '#{node[:db][:replication][:password]}'")
+      else
+        Chef::Log.info "Do nothing, Detected read_only db or slave mode"
+      end
+    end
+  conn.finish
   # Setup pg_hba.conf for replication user allow
   RightScale::Database::PostgreSQL::Helper.configure_pg_hba(node)
 
