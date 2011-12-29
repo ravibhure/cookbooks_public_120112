@@ -76,16 +76,17 @@ action :firewall_update do
 end
 
 action :write_backup_info do
+    File_position = `/usr/pgsql-9.1/bin/pg_controldata /var/lib/pgsql/9.1/data/ | grep "Latest checkpoint location:" | awk '{print $NF}'`
     masterstatus = Hash.new
-    masterstatus = RightScale::Database::PostgreSQL::Helper.do_query("select version()")
     masterstatus['Master_IP'] = node[:db][:current_master_ip]
     masterstatus['Master_instance_uuid'] = node[:db][:current_master_uuid]
-    slavestatus = RightScale::Database::PostgreSQL::Helper.do_query("select version()")
     slavestatus ||= Hash.new
+    slavestatus['File_position'] = File_position
   if node[:db][:this_is_master]
     Chef::Log.info "Backing up Master info"
   else
     Chef::Log.info "Backing up slave replication status"
+    masterstatus['File_position']  = slavestatus['File_position']
   end
   Chef::Log.info "Saving master info...:\n#{masterstatus.to_yaml}"
   ::File.open(::File.join(node[:db][:data_dir], RightScale::Database::PostgreSQL::Helper::SNAPSHOT_POSITION_FILENAME), ::File::CREAT|::File::TRUNC|::File::RDWR) do |out|
