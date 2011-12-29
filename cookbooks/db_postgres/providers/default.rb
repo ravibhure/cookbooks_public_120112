@@ -76,20 +76,18 @@ action :firewall_update do
 end
 
 action :write_backup_info do
-  whoami = RightScale::Database::PostgreSQL::Helper.do_query("show transaction_read_only").getvalue(0,0)
-  if ( whoami == 'off')
     masterstatus = Hash.new
-    masterstatus = "Master"
+    masterstatus = RightScale::Database::PostgreSQL::Helper.do_query("show transaction_read_only")
+    masterstatus['Whoami'] = "Master"
     masterstatus['Master_IP'] = node[:db][:current_master_ip]
     masterstatus['Master_instance_uuid'] = node[:db][:current_master_uuid]
-  else
-    slavestatus = "Slave"
+    slavestatus = RightScale::Database::PostgreSQL::Helper.do_query("show transaction_read_only")
     slavestatus ||= Hash.new
-  end
   if node[:db][:this_is_master]
     Chef::Log.info "Backing up Master info"
   else
     Chef::Log.info "Backing up slave replication status"
+    slavestatus['Whoami'] = "Slave"
   end
   Chef::Log.info "Saving master info...:\n#{masterstatus.to_yaml}"
   ::File.open(::File.join(node[:db][:data_dir], RightScale::Database::PostgreSQL::Helper::SNAPSHOT_POSITION_FILENAME), ::File::CREAT|::File::TRUNC|::File::RDWR) do |out|
