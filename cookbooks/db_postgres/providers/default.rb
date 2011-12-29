@@ -86,7 +86,7 @@ action :write_backup_info do
     Chef::Log.info "Backing up Master info"
   else
     Chef::Log.info "Backing up slave replication status"
-    masterstatus['File_position']  = slavestatus['File_position']
+    masterstatus['File_position'] = slavestatus['File_position']
   end
   Chef::Log.info "Saving master info...:\n#{masterstatus.to_yaml}"
   ::File.open(::File.join(node[:db][:data_dir], RightScale::Database::PostgreSQL::Helper::SNAPSHOT_POSITION_FILENAME), ::File::CREAT|::File::TRUNC|::File::RDWR) do |out|
@@ -301,7 +301,7 @@ action :grant_replication_slave do
           RightScale::Database::PostgreSQL::Helper.do_query('select pg_reload_conf()')
         end
       else
-        Chef::Log.info "Do nothing, Detected read_only db or slave mode"
+        Chef::Log.info "Skipping 'create replication user', Detected read_only db or slave mode"
       end
   conn.finish
 
