@@ -32,7 +32,7 @@ Chef::Log.info  "download and restore sample database 'booktown' db"
 dumpfile = "/tmp/baooktown.sql"
 dwnurl = "http://www.commandprompt.com/ppbook/booktown.sql"
 
-bash "download and restore sample database" download  do
+bash "download and restore sample database"  do
     code <<-EOF
       # Downloading #{dumpfile}
       Chef::Log.info "Downloading #{dumpfile}......"
