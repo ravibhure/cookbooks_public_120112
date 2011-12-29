@@ -31,8 +31,6 @@ set_unless[:db_postgres][:previous_master] = nil
 # Optional attributes
 #
 set_unless[:db_postgres][:port] = "5432"
-set_unless[:db_postgres][:admin_role] = "administrator"
-set_unless[:db_postgres][:user_role] = "users"
 set_unless[:db_postgres][:tmpdir] = "/tmp"
 set_unless[:db_postgres][:datadir] = "/var/lib/pgsql/9.1/data"
 set_unless[:db_postgres][:confdir] = "/var/lib/pgsql/9.1/data"

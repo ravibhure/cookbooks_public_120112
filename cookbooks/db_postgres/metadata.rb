@@ -11,7 +11,8 @@ depends "rs_utils"
 depends "block_device"
 
 recipe  "db_postgres::default", "Runs the client 'db::install_client' recipes."
-recipe  "db_postgres::setup_pgmaster", "Runs the client 'db_postgres::setup_pgmaster' recipe to setup master config for replication"
+recipe  "db_postgres::test_db", "Runs to create sample db 'db::test_db' recipes."
+recipe  "db_postgres::setup_pgmaster", "Runs the master 'db_postgres::setup_pgmaster' recipe to setup master config for replication in 'sync' mode"
 
 attribute "db_postgres",
   :display_name => "General Database Options",

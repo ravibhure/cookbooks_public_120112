@@ -27,15 +27,16 @@
 # Script to download and restore sample database 'booktown' db in to postgres
 # Ravi Bhure
 # 
-log "download and restore sample database 'booktown' db"
+Chef::Log.info  "download and restore sample database 'booktown' db"
 
-dumpfile = /tmp/baooktown.sql
+dumpfile = "/tmp/baooktown.sql"
+dwnurl = "http://www.commandprompt.com/ppbook/booktown.sql"
 
 bash "download and restore sample database" download  do
     code <<-EOF
       # Downloading #{dumpfile}
-      log "Downloading #{dumpfile}......"
-      wget http://www.commandprompt.com/ppbook/booktown.sql  -O #{dumpfile}
+      Chef::Log.info "Downloading #{dumpfile}......"
+      wget #{dwnurl} -O #{dumpfile}
       set -e
       if [ ! -f #{dumpfile} ]
       then

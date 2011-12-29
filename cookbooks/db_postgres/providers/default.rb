@@ -123,41 +123,30 @@ action :set_privileges do
   end
 end
 
+
 action :install_client do
 
   # Install PostgreSQL 9.1.1 package(s)
   if node[:platform] == "centos"
-  arch = node[:kernel][:machine]
-  arch = "x86_64" if arch == "i386" 
-
+   arch = node[:kernel][:machine]
+   arch = "x86_64" if arch == "i386"
+  
   # Install PostgreSQL GPG Key (http://yum.postgresql.org/9.1/redhat/rhel-5-(arch)/pgdg-centos91-9.1-4.noarch.rpm)
-    pgreporpm = ::File.join(::File.dirname(__FILE__), "..", "files", "centos", "pgdg-centos91-9.1-4.noarch.rpm")
-    `rpm -ihv #{pgreporpm}`
+ 
+  package "libxslt" do
+    action :install
+  end
 
-    #Installing Libxslt package for postgresql-9.1 dependancy
-    package "libxslt" do
-      action :install
+  packages = ["postgresql91-libs", "postgresql91", "postgresql91-devel" ]
+    Chef::Log.info("Packages to install: #{packages.join(",")}")
+    packages.each do |p|
+      pkg = ::File.join(::File.dirname(__FILE__), "..", "files", "centos", "#{p}-9.1.1-1PGDG.rhel5.#{arch}.rpm")
+      package p do
+        action :install
+        source "#{pkg}"
+        provider Chef::Provider::Package::Rpm
+      end
     end
-
-  # Packages from cookbook files as attachment for PostgreSQL 9.1.1
-  # Install PostgreSQL client rpm
-    pgdevelrpm = ::File.join(::File.dirname(__FILE__), "..", "files", "centos", "postgresql91-devel-9.1.1-1PGDG.rhel5.#{arch}.rpm")
-    pglibrpm = ::File.join(::File.dirname(__FILE__), "..", "files", "centos", "postgresql91-libs-9.1.1-1PGDG.rhel5.#{arch}.rpm")
-    pgrpm = ::File.join(::File.dirname(__FILE__), "..", "files", "centos", "postgresql91-9.1.1-1PGDG.rhel5.#{arch}.rpm")
-	`rpm -ivh --nodeps #{pgrpm}`
-
-  package "#{pglibrpm}" do
-    action :install
-    source "#{pglibrpm}"
-    provider Chef::Provider::Package::Rpm
-  end
-
-  package "#{pgdevelrpm}" do
-    action :install
-    source "#{pgdevelrpm}"
-    provider Chef::Provider::Package::Rpm
-  end
-
   else
 
     # Currently supports CentOS in future will support others
@@ -167,9 +156,9 @@ action :install_client do
   # == Install PostgreSQL client gem
   #
   # Also installs in compile phase
-  #
-  execute "install pg gem" do
-    command "/opt/rightscale/sandbox/bin/gem install pg -- --with-pg-config=/usr/pgsql-9.1/bin/pg_config"
+  gem_package("pg") do
+    gem_binary("/opt/rightscale/sandbox/bin/gem")
+    options("-- --with-pg-config=/usr/pgsql-9.1/bin/pg_config")
   end
 
 end
@@ -181,34 +170,22 @@ action :install_server do
 
   arch = node[:kernel][:machine]
   arch = "x86_64" if arch == "i386"
-
-  # Install PostgreSQL 9.1 server rpm
-    pgserverrpm = ::File.join(::File.dirname(__FILE__), "..", "files", "centos", "postgresql91-server-9.1.1-1PGDG.rhel5.#{arch}.rpm")
-  # Install PostgreSQL contrib rpm
-     pgcontribpkg =  ::File.join(::File.dirname(__FILE__), "..", "files", "centos", "postgresql91-contrib-9.1.1-1PGDG.rhel5.#{arch}.rpm")
-  # Install uuid package to resolve postgresql-contrib package  
-  uuidrpm = ::File.join(::File.dirname(__FILE__), "..", "files", "centos", "uuid-1.5.1-4.rhel5.#{arch}.rpm")
-
-  package "#{pgserverrpm}" do
+ 
+  package "uuid" do
     action :install
-    source "#{pgserverrpm}"
-    provider Chef::Provider::Package::Rpm
   end
 
-  package "#{uuidrpm}" do
-    action :install
-    source "#{uuidrpm}"
-    provider Chef::Provider::Package::Rpm
+  node[:db_postgres][:packages_install].each do |p|
+    pkg = ::File.join(::File.dirname(__FILE__), "..", "files", "centos", "#{p}-9.1.1-1PGDG.rhel5.#{arch}.rpm")
+    package p do
+      action :install
+      source "#{pkg}"
+      provider Chef::Provider::Package::Rpm
+    end
   end
-
-  package "#{pgcontribpkg}" do
-    action :install
-    source "#{pgcontribpkg}"
-    provider Chef::Provider::Package::Rpm
-  end  
-
 
   service "postgresql-9.1" do
+    #service_name value_for_platform([ "centos", "redhat", "suse" ] => {"default" => "postgresql-9.1"}, "default" => "postgresql-9.1")
     supports :status => true, :restart => true, :reload => true
     action :stop
   end
@@ -237,9 +214,10 @@ action :install_server do
     recursive true
   end
 
-  # Setting up postgresql-9.1 config files
   # Setup postgresql.conf
-  template "#{node[:db_postgres][:confdir]}/postgresql.conf" do
+  # template_source = "postgresql.conf.erb"
+
+  template value_for_platform([ "centos", "redhat", "suse" ] => {"default" => "#{node[:db_postgres][:confdir]}/postgresql.conf"}, "default" => "#{node[:db_postgres][:confdir]}/postgresql.conf") do
     source "postgresql.conf.erb"
     owner "postgres"
     group "postgres"
@@ -248,7 +226,9 @@ action :install_server do
   end
 
   # Setup pg_hba.conf
-  template "#{node[:db_postgres][:confdir]}/pg_hba.conf" do
+  # pg_hba_source = "pg_hba.conf.erb"
+
+  template value_for_platform([ "centos", "redhat", "suse" ] => {"default" => "#{node[:db_postgres][:confdir]}/pg_hba.conf"}, "default" => "#{node[:db_postgres][:confdir]}/pg_hba.conf") do
     source "pg_hba.conf.erb"
     owner "postgres"
     group "postgres"
@@ -256,11 +236,10 @@ action :install_server do
     cookbook 'db_postgres'
   end
 
-
   # == Setup PostgreSQL user limits
   #
   # Set the postgres and root users max open files to a really large number.
-  # 1/3 of the overall system file max should be large enough.  The percentage can be
+  # 1/3 of the overall system file max should be large enough. The percentage can be
   # adjusted if necessary.
   #
   postgres_file_ulimit = `sysctl -n fs.file-max`.to_i/33
@@ -273,7 +252,7 @@ action :install_server do
     cookbook 'db_postgres'
   end
 
-  # Change root's limitations for THIS shell.  The entry in the limits.d will be
+  # Change root's limitations for THIS shell. The entry in the limits.d will be
   # used for future logins.
   # The setting needs to be in place before postgresql-9 is started.
   #
@@ -282,7 +261,7 @@ action :install_server do
   # == Start PostgreSQL
   #
   service "postgresql-9.1" do
-    supports :status => true, :restart => true, :reload => true
+    # supports :status => true, :restart => true, :reload => true
     action :start
   end
     
@@ -292,13 +271,13 @@ action :grant_replication_slave do
   require 'rubygems'
   Gem.clear_paths
   require 'pg'
-  
+
   Chef::Log.info "GRANT REPLICATION SLAVE to user #{node[:db][:replication][:user]}"
   # Opening connection for pg operation
   conn = PGconn.open("localhost", nil, nil, nil, nil, "postgres", nil)
-  
+
   # Enable admin/replication user
-  # Check if server is in read_only mode, if found skip this... 
+  # Check if server is in read_only mode, if found skip this...
       res = conn.exec("show transaction_read_only")
       slavestatus = res.getvalue(0,0)
       if ( slavestatus == 'off' )
@@ -330,21 +309,6 @@ action :enable_replication do
   rep_pass = node[:db][:replication][:password]
   app_name = node[:rightscale][:instance_uuid]
 
-  # starting mark for setup_pgmaster recipe
-  # Setup attributes
-  #to_enable = new_resource.enable
-  #attrs = {:db_postgres => {:slave => Hash.new}}
-  #attrs[:db_postgres][:slave][:sync] = (to_enable == true) ? "enable" : "disable"
-
-  # Use RightNet to update postgresql config file on master db tagged servers
-  # Not required in boot phase
-  #remote_recipe "Request config update" do
-  #  recipe "db_postgres::setup_pgmaster"
-  #  recipients_tags "rs_dbrepl:master_instance_uuid=#{node[:db][:current_master_uuid]}"
-  #  attributes attrs
-  #end
-  # stopping mark pgmaster recipe
-
   master_info = RightScale::Database::PostgreSQL::Helper.load_replication_info(node)
 
   # == Set slave state
@@ -375,7 +339,6 @@ action :enable_replication do
   5.times do
     action_start
   end
-
   ruby_block "validate_backup" do
     block do
       master_info = RightScale::Database::PostgreSQL::Helper.load_replication_info(node)
@@ -390,12 +353,11 @@ end
 
 action :promote do
   previous_master = node[:db][:current_master_ip]
-  # raise "FATAL: could not determine master host from slave status" if previous_master.nil?
+   raise "FATAL: could not determine master host from slave status" if previous_master.nil?
   Chef::Log.info "host: #{previous_master}}"
 
   # PHASE1: contains non-critical old master operations, if a timeout or
   # error occurs we continue promotion assuming the old master is dead.
-
   begin
   # Critical operations on newmaster, if a failure occurs here we allow it to halt promote operations
   # <Ravi - Do your stuff here> 
