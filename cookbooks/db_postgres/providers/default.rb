@@ -76,10 +76,18 @@ action :firewall_update do
 end
 
 action :write_backup_info do
-  masterstatus = Hash.new
-  masterstatus = node[:db][:current_master_ip]
+  whoami = RightScale::Database::PostgreSQL::Helper.do_query("show transaction_read_only").getvalue(0,0)
+  if ( whoami == 'off')
+    masterstatus = Hash.new
+    masterstatus = "Master"
+    masterstatus['Master_IP'] = node[:db][:current_master_ip]
+    masterstatus['Master_instance_uuid'] = node[:db][:current_master_uuid]
+  else
+    slavestatus = "Slave"
+    slavestatus ||= Hash.new
+  end
   if node[:db][:this_is_master]
-   Chef::Log.info "Backing up Master info"
+    Chef::Log.info "Backing up Master info"
   else
     Chef::Log.info "Backing up slave replication status"
   end
@@ -342,11 +350,11 @@ action :enable_replication do
   ruby_block "validate_backup" do
     block do
       master_info = RightScale::Database::PostgreSQL::Helper.load_replication_info(node)
-#      raise "Position and file not saved!" unless master_info['Master_instance_uuid']
+      raise "Position and file not saved!" unless master_info['Master_instance_uuid']
       # Check that the snapshot is from the current master or a slave associated with the current master
-#        if master_info['Master_instance_uuid'] != node[:db][:current_master_uuid]
-#        raise "FATAL: snapshot was taken from a different master! snap_master was:#{master_info['Master_instance_uuid']} != current master: #{node[:db][:current_master_uuid]}"
-#        end
+        if master_info['Master_instance_uuid'] != node[:db][:current_master_uuid]
+        raise "FATAL: snapshot was taken from a different master! snap_master was:#{master_info['Master_instance_uuid']} != current master: #{node[:db][:current_master_uuid]}"
+        end
       end
    end
 end
