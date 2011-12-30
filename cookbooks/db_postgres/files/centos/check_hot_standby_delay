@@ -1,0 +1,90 @@
+#!/opt/rightscale/sandbox/bin/ruby
+# Arguments: hostname to use to report the stats (Instance ID or UUID)
+# @Ravi.bhure
+
+require 'getoptlong'
+require 'rubygems'
+require 'pg'
+
+PLUGIN_NAME = 'check_hot_standby_delay'
+
+def usage
+  puts("#{$0} -m <masterip> -s <slaveip> -h <host_id> [-i <sampling_interval>]")
+  puts("    -h: The hostname of the machine. Instance ID or UUID")
+  puts("    -m: The IPAddress of the master db server. 1.2.3.4")
+  puts("    -s: The IPAddress of the slave db server. 1.2.3.4")
+  puts("    -i: The sample interval of the file check (in seconds).  Default: 20 seconds")
+  exit
+
+end
+
+# Main
+begin
+  # Sync stdout so that it will flush to collectd properly.
+  $stdout.sync = true
+
+  # Parse command line options
+  hostname = nil
+  masterip = nil
+  slaveip = nil
+  sampling_interval = 20  # sec, Default value
+  opts = GetoptLong.new(
+    [ '--masterip', '-m', GetoptLong::REQUIRED_ARGUMENT ],
+    [ '--slaveip', '-s', GetoptLong::REQUIRED_ARGUMENT ],
+    [ '--hostid', '-h', GetoptLong::REQUIRED_ARGUMENT ],
+    [ '--sampling-interval', '-i',  GetoptLong::OPTIONAL_ARGUMENT ]
+  )
+  opts.each do |opt, arg|
+    case opt
+      when '--masterip'
+        masterip = arg
+      when '--slaveip'
+        slaveip = arg
+      when '--hostid'
+        hostname = arg
+      when '--sampling-interval'
+        sampling_interval = arg.to_i
+    end
+  end
+  usage if !hostname
+
+    # Get master xlog data
+  def master(hostip = nil)
+    conn = PGconn.open("#{hostip}", nil, nil, nil, nil, "postgres", nil)
+    slavestatus = conn.exec("SELECT pg_current_xlog_location() AS location")
+    slavestatus = slavestatus.getvalue(0,0)
+    data = `echo #{slavestatus} | cut -d/ -f2`
+    result =  "0x#{data}"
+    # hex result converting to bytes
+    result =  `echo $((#{result}))`
+  end
+
+  # Get slave xlog data
+  def slave(hostip = nil)
+    conn = PGconn.open("#{hostip}", nil, nil, nil, nil, "postgres", nil)
+    slavestatus = conn.exec("SELECT pg_last_xlog_receive_location() AS receive")
+    slavestatus = slavestatus.getvalue(0,0)
+    data = `echo #{slavestatus} | cut -d/ -f2`
+    result =  "0x#{data}"
+    # hex result converting to bytes
+    result =  `echo $((#{result}))`
+  end
+
+  masterstat = master(masterip)
+  slavestat = slave(slaveip)
+
+  # Collection loop
+  while true do
+    start_run = Time.now.to_i
+    next_run = start_run + sampling_interval
+
+    # collectd data and print the values ==> set your code here for monitoring
+    data = `echo "masterstat - slavestat" | bc` # get hot_standby_delay average
+    puts("PUTVAL #{hostname}/#{PLUGIN_NAME}/hot_standby_delay interval=#{sampling_interval} #{start_run}:#{data}")
+
+    # sleep to make the interval
+    while((time_left = (next_run - Time.now.to_i)) > 0) do
+      sleep(time_left)
+    end
+  end
+end
