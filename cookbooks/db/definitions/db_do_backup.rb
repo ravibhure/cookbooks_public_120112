@@ -91,8 +91,8 @@ define :db_do_backup, :force => false, :backup_type => "primary" do
   # backup.rb removes the file lock created from :backup_lock_take
   bash "backup.rb" do
     environment ({ 
-#      'STORAGE_ACCOUNT_ID_RACKSPACE' => node[:block_device][:rackspace_user],
-#      'STORAGE_ACCOUNT_SECRET_RACKSPACE' => node[:block_device][:rackspace_secret],
+      'STORAGE_ACCOUNT_ID_RACKSPACE' => node[:block_device][:rackspace_user],
+      'STORAGE_ACCOUNT_SECRET_RACKSPACE' => node[:block_device][:rackspace_secret],
       'STORAGE_ACCOUNT_ID_AWS' => node[:block_device][:aws_access_key_id],
       'STORAGE_ACCOUNT_SECRET_AWS' => node[:block_device][:aws_secret_access_key]
     })
