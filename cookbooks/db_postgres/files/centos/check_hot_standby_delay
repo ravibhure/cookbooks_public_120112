@@ -1,18 +1,19 @@
-#!/opt/rightscale/sandbox/bin/ruby
+#!/usr/bin/ruby
 # Arguments: hostname to use to report the stats (Instance ID or UUID)
-# @Ravi.bhure
+# Arguments: IPAddress of Master/Slave database server.
+# @Author: Ravi.bhure 
+# @Email: ravi.bhure@symphonysv.com
+# @Date: 12/30/2011
 
 require 'getoptlong'
-require 'rubygems'
-require 'pg'
 
 PLUGIN_NAME = 'check_hot_standby_delay'
 
 def usage
   puts("#{$0} -m <masterip> -s <slaveip> -h <host_id> [-i <sampling_interval>]")
-  puts("    -h: The hostname of the machine. Instance ID or UUID")
   puts("    -m: The IPAddress of the master db server. 1.2.3.4")
   puts("    -s: The IPAddress of the slave db server. 1.2.3.4")
+  puts("    -h: The hostname of the machine. Instance ID or UUID")
   puts("    -i: The sample interval of the file check (in seconds).  Default: 20 seconds")
   exit
 
@@ -50,22 +51,16 @@ begin
 
     # Get master xlog data
   def master(hostip = nil)
-    conn = PGconn.open("#{hostip}", nil, nil, nil, nil, "postgres", nil)
-    slavestatus = conn.exec("SELECT pg_current_xlog_location() AS location")
-    slavestatus = slavestatus.getvalue(0,0)
-    data = `echo #{slavestatus} | cut -d/ -f2`
-    result =  "0x#{data}"
+    masterstatus = `psql -h #{hostip} -U postgres -c "SELECT pg_current_xlog_location() AS location" | sort | xargs|awk '{print $1}'| cut -d/ -f2`
+    result =  "0x#{masterstatus}"
     # hex result converting to bytes
     result =  `echo $((#{result}))`
   end
 
   # Get slave xlog data
   def slave(hostip = nil)
-    conn = PGconn.open("#{hostip}", nil, nil, nil, nil, "postgres", nil)
-    slavestatus = conn.exec("SELECT pg_last_xlog_receive_location() AS receive")
-    slavestatus = slavestatus.getvalue(0,0)
-    data = `echo #{slavestatus} | cut -d/ -f2`
-    result =  "0x#{data}"
+    slavestatus = `psql -h #{hostip} -U postgres -c "SELECT pg_last_xlog_receive_location() AS receive" | sort | xargs|awk '{print $1}'| cut -d/ -f2`
+    result =  "0x#{slavestatus}"
     # hex result converting to bytes
     result =  `echo $((#{result}))`
   end
