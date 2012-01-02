@@ -356,6 +356,36 @@ action :enable_replication do
     end
   end
 
+  # Now setup monitoring for slave replication, hard to define the lag, we are trying to get master/slave sync health status 
+
+    # install the pg_cluster_status collectd script into the collectd library plugins directory
+    remote_file ::File.join(node[:rs_utils][:collectd_lib], "plugins", 'pg_cluster_status') do
+      source "pg_cluster_status"
+      mode "0755"
+      cookbook 'db_postgres'
+    end
+
+    # add a collectd config file for the pg_cluster_status script with the exec plugin and restart collectd if necessary
+    template ::File.join(node[:rs_utils][:collectd_plugin_dir], 'pg_cluster_status.conf') do
+      source "pg_cluster_status_exec.erb"
+      notifies :restart, resources(:service => "collectd")
+      cookbook 'db_postgres'
+    end
+
+    # install the check_hot_standby_delay collectd script into the collectd library plugins directory
+    remote_file ::File.join(node[:rs_utils][:collectd_lib], "plugins", 'check_hot_standby_delay') do
+      source "check_hot_standby_delay"
+      mode "0755"
+      cookbook 'db_postgres'
+    end
+
+    # add a collectd config file for the check_hot_standby_delay script with the exec plugin and restart collectd if necessary
+    template ::File.join(node[:rs_utils][:collectd_plugin_dir], 'check_hot_standby_delay.conf') do
+      source "check_hot_standby_delay_exec.erb"
+      notifies :restart, resources(:service => "collectd")
+      cookbook 'db_postgres'
+    end
+
 end
 
 action :promote do
@@ -420,34 +450,6 @@ action :setup_monitoring do
     # add a collectd config file for the postgres_ps script with the exec plugin and restart collectd if necessary
     template ::File.join(node[:rs_utils][:collectd_plugin_dir], 'postgres_ps.conf') do
       source "postgres_collectd_exec.erb"
-      notifies :restart, resources(:service => "collectd")
-      cookbook 'db_postgres'
-    end
-
-    # install the pg_cluster_status collectd script into the collectd library plugins directory
-    remote_file ::File.join(node[:rs_utils][:collectd_lib], "plugins", 'pg_cluster_status') do
-      source "pg_cluster_status"
-      mode "0755"
-      cookbook 'db_postgres'
-    end
-
-    # add a collectd config file for the pg_cluster_status script with the exec plugin and restart collectd if necessary
-    template ::File.join(node[:rs_utils][:collectd_plugin_dir], 'pg_cluster_status.conf') do
-      source "pg_cluster_status_exec.erb"
-      notifies :restart, resources(:service => "collectd")
-      cookbook 'db_postgres'
-    end
-
-    # install the check_hot_standby_delay collectd script into the collectd library plugins directory
-    remote_file ::File.join(node[:rs_utils][:collectd_lib], "plugins", 'check_hot_standby_delay') do
-      source "check_hot_standby_delay"
-      mode "0755"
-      cookbook 'db_postgres'
-    end
-
-    # add a collectd config file for the check_hot_standby_delay script with the exec plugin and restart collectd if necessary
-    template ::File.join(node[:rs_utils][:collectd_plugin_dir], 'check_hot_standby_delay.conf') do
-      source "check_hot_standby_delay_exec.erb"
       notifies :restart, resources(:service => "collectd")
       cookbook 'db_postgres'
     end

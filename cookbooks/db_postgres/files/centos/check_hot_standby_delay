@@ -48,6 +48,8 @@ begin
     end
   end
   usage if !hostname
+  usage if !masterip
+  usage if !slaveip
 
     # Get master xlog data
   def master(hostip = nil)
