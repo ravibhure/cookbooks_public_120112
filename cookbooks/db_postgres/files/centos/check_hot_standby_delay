@@ -53,6 +53,18 @@ begin
   usage if !masterip
   usage if !slaveip
 
+  # check server status/role - if this is master server, skip to run this script.
+  # This script should run only on slave server
+  def detect_if_master(hostip)
+    read_only = `psql -h #{hostip} -U postgres -c "show transaction_read_only" | xargs|awk '{print $3}'`
+    return true if read_only =~ /off/
+  end
+  whoiam = detect_if_master("localhost")
+  if ( whoiam == true )
+    puts "This is master db; skipping to run this script on master server"
+    exit 1
+  end
+  
   ### Given an +xlog+ position from a slave server, return
   ### the number of bytes the slave needs to replay before it
   ### is caught up to the master.
@@ -91,7 +103,7 @@ begin
     next_run = start_run + sampling_interval
 
     # collectd data and print the values ==> set your code here for monitoring
-    puts("PUTVAL #{hostname}/#{PLUGIN_NAME}/hot_standby_delay interval=#{sampling_interval} #{start_run}:#{lag_in_megs}")
+    puts("PUTVAL #{hostname}/#{PLUGIN_NAME}/delay_in_bytes interval=#{sampling_interval} #{start_run}:#{lag_in_megs}")
 
     # sleep to make the interval
     while((time_left = (next_run - Time.now.to_i)) > 0) do
