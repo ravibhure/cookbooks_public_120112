@@ -65,6 +65,7 @@ begin
     exit 1
   end
   
+  while true do
   ### Given an +xlog+ position from a slave server, return
   ### the number of bytes the slave needs to replay before it
   ### is caught up to the master.
@@ -98,7 +99,6 @@ begin
 
     
   # Collection loop
-  while true do
     start_run = Time.now.to_i
     next_run = start_run + sampling_interval
 

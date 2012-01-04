@@ -64,7 +64,8 @@ begin
     puts "This is master db; skipping to run this script on master server"
     exit 1
   end
-  
+
+  while true do  
   ### Given an +slave status state+ from a master server, return
   ### the true
   ###
@@ -92,7 +93,6 @@ begin
   slavestate = slave_state("#{masterip}", "#{slaveip}")
     
   # Collection loop
-  while true do
     start_run = Time.now.to_i
     next_run = start_run + sampling_interval
 
