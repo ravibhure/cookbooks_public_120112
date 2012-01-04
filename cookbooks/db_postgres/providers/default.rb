@@ -386,10 +386,7 @@ action :enable_replication do
   end
 
   # Restart collectd after all done to run monitoring scripts on slave
-  service "collectd" do
-    supports :restart => true, :reload => true
-    action :enable
-  end
+  execute "/etc/init.d/collectd restart" 
 
 end
 
