@@ -55,14 +55,20 @@ begin
 
   # check server status/role - if this is master server, skip to run this script.
   # This script should run only on slave server
-  def detect_if_master(hostip)
-    read_only = `psql -h #{hostip} -U postgres -c "show transaction_read_only" | xargs|awk '{print $3}'`
-    return true if read_only =~ /off/
+  def detect_if_master
+    read_only = `/usr/pgsql-9.1/bin/pg_controldata /var/lib/pgsql/9.1/data | grep "Database cluster state" | awk '{print $NF}'`
+    return true if read_only =~ /production/
   end
-  whoiam = detect_if_master("localhost")
+
+  whoiam = detect_if_master
   if ( whoiam == true )
-    puts "This is master db; skipping to run this script on master server"
+    # This is master db; skipping to run this script on master server
     exit 1
+  end
+
+  def pg_status
+    status = `/usr/pgsql-9.1/bin/pg_controldata /var/lib/pgsql/9.1/data | grep "Database cluster state" |cut -d: -f2 | xargs`
+    return true if status =~ /shut down/
   end
   
   while true do
@@ -82,19 +88,24 @@ begin
     current   = `psql -h #{masterip} -U postgres -c "SELECT pg_current_xlog_location() AS location" |xargs|awk '{print $3}'`
     $segment, $offset = current.split( /\// )
   rescue => err
-    puts 'Unable to retrieve required info from the master.'
-    puts err.message
-    puts err.backtrace.join("\n")
+    # Unable to retrieve required info from the master.
     exit 1
   end
 
   # Get slave xlog data
   begin
-    slave_xlog = `psql -h #{slaveip} -U postgres -c "SELECT pg_last_xlog_receive_location() AS receive" | xargs|awk '{print $3}'`
+    mystatus = pg_status
+    if ( mystatus == true )
+      # pg status is down, exiting script to avoid un-wanted errors on PUTVAL  
+      exit 1
+    else
+      slave_xlog = `psql -h #{slaveip} -U postgres -c "SELECT pg_last_xlog_receive_location() AS receive" | xargs|awk '{print $3}'`
+    end
     # hex result converting to bytes
-    lag_in_megs = ( find_lag( slave_xlog ).to_f / 1024 / 1024 ).abs    
+    lag_in_megs = ( find_lag( slave_xlog ).to_f / 1024 / 1024 ).abs.to_i    
   rescue => err
-    puts err.message
+    # Unable to retrieve required info from the slave.
+    exit 1
   end
 
     
@@ -103,7 +114,7 @@ begin
     next_run = start_run + sampling_interval
 
     # collectd data and print the values ==> set your code here for monitoring
-    puts("PUTVAL #{hostname}/#{PLUGIN_NAME}/delay_in_bytes interval=#{sampling_interval} #{start_run}:#{lag_in_megs}")
+    print "PUTVAL #{hostname}/#{PLUGIN_NAME}/delay_in_bytes interval=#{sampling_interval} #{start_run}:#{lag_in_megs}"
 
     # sleep to make the interval
     while((time_left = (next_run - Time.now.to_i)) > 0) do

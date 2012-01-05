@@ -52,17 +52,22 @@ begin
   usage if !slaveip
   usage if !hostname
   
-  # Just check we don't want to run this over dummy machine.
   # check server status/role - if this is master server, skip to run this script.
   # This script should run only on slave server
-  def detect_if_master(hostip)
-    read_only = `psql -h #{hostip} -U postgres -c "show transaction_read_only" | xargs|awk '{print $3}'`
-    return true if read_only =~ /off/
+  def detect_if_master
+    read_only = `/usr/pgsql-9.1/bin/pg_controldata /var/lib/pgsql/9.1/data | grep "Database cluster state" | awk '{print $NF}'`
+    return true if read_only =~ /production/
   end
-  whoiam = detect_if_master("localhost")
+
+  whoiam = detect_if_master
   if ( whoiam == true )
-    puts "This is master db; skipping to run this script on master server"
+    #This is master db; skipping to run this script on master server.
     exit 1
+  end
+
+  def pg_status
+    status = `/usr/pgsql-9.1/bin/pg_controldata /var/lib/pgsql/9.1/data | grep "Database cluster state" |cut -d: -f2 | xargs`
+    return true if status =~ /shut down/
   end
 
   while true do  
@@ -79,12 +84,16 @@ begin
   
   # Get data from master
   begin
-    mquery = `psql -h #{masterip} -U postgres -c "select client_addr, state from pg_stat_replication" |grep "#{slaveip}"`
-    $client_addr, $state = mquery.split( /\|/ )
+    mystatus = pg_status
+    if ( mystatus == true )
+      # pg status is down, exiting script to avoid un-wanted errors on PUTVAL
+      exit 1
+    else
+      mquery = `psql -h #{masterip} -U postgres -c "select client_addr, state from pg_stat_replication" |grep "#{slaveip}"`
+      $client_addr, $state = mquery.split( /\|/ )
+    end
   rescue => err
-    puts 'Unable to retrieve required info from the master.'
-    puts err.message
-    puts err.backtrace.join("\n")
+    # Unable to retrieve required info from the master
     exit 1
   end
 
@@ -100,14 +109,14 @@ begin
     if ( slavestatus == true )
           if ( slavestate == true )
             megs = "1"
-            puts("PUTVAL #{hostname}/#{PLUGIN_NAME}/status  interval=#{sampling_interval} #{start_run}:#{megs}")
+            print "PUTVAL #{hostname}/#{PLUGIN_NAME}/connection_idle  interval=#{sampling_interval} #{start_run}:#{megs}"
           else
             megs = "0"
-            puts("PUTVAL #{hostname}/#{PLUGIN_NAME}/status  interval=#{sampling_interval} #{start_run}:#{megs}")
+            print "PUTVAL #{hostname}/#{PLUGIN_NAME}/connection_idle  interval=#{sampling_interval} #{start_run}:#{megs}"
           end
     else
       megs = "0"
-      puts("PUTVAL #{hostname}/#{PLUGIN_NAME}/status  interval=#{sampling_interval} #{start_run}:#{megs}")
+      print "PUTVAL #{hostname}/#{PLUGIN_NAME}/connection_idle  interval=#{sampling_interval} #{start_run}:#{megs}"
     end
 
     # sleep to make the interval
