@@ -109,14 +109,14 @@ begin
     if ( slavestatus == true )
           if ( slavestate == true )
             megs = "1"
-            print "PUTVAL #{hostname}/#{PLUGIN_NAME}/connection_idle  interval=#{sampling_interval} #{start_run}:#{megs}"
+            print "PUTVAL #{hostname}/#{PLUGIN_NAME}/gauge  interval=#{sampling_interval} #{start_run}:#{megs}"
           else
             megs = "0"
-            print "PUTVAL #{hostname}/#{PLUGIN_NAME}/connection_idle  interval=#{sampling_interval} #{start_run}:#{megs}"
+            print "PUTVAL #{hostname}/#{PLUGIN_NAME}/gauge  interval=#{sampling_interval} #{start_run}:#{megs}"
           end
     else
       megs = "0"
-      print "PUTVAL #{hostname}/#{PLUGIN_NAME}/connection_idle  interval=#{sampling_interval} #{start_run}:#{megs}"
+      print "PUTVAL #{hostname}/#{PLUGIN_NAME}/gauge  interval=#{sampling_interval} #{start_run}:#{megs}"
     end
 
     # sleep to make the interval
