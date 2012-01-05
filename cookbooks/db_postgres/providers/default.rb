@@ -385,6 +385,17 @@ action :enable_replication do
     cookbook 'db_postgres'
   end
 
+  ruby_block "add_collectd_gauges" do
+    block do
+      types_file = ::File.join(node[:rs_utils][:collectd_share], 'types.db')
+      typesdb = IO.read(types_file)
+      unless typesdb.include?('bytes-delta') && typesdb.include?('pg_rep-status')
+        typesdb += "\nbytes-delta               value:GAUGE:0:200000000\npg_rep-status             value:GAUGE:0:200000000"
+        ::File.open(types_file, "w") { |f| f.write(typesdb) }
+      end
+    end
+  end 
+
   # Restart collectd after all done to run monitoring scripts on slave
   execute "/etc/init.d/collectd restart" 
 

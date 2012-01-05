@@ -114,7 +114,7 @@ begin
     next_run = start_run + sampling_interval
 
     # collectd data and print the values ==> set your code here for monitoring
-    print "PUTVAL #{hostname}/#{PLUGIN_NAME}/bytes interval=#{sampling_interval} #{start_run}:#{lag_in_megs}"
+    print "PUTVAL #{hostname}/#{PLUGIN_NAME}/bytes-delta interval=#{sampling_interval} #{start_run}:#{lag_in_megs}"
 
     # sleep to make the interval
     while((time_left = (next_run - Time.now.to_i)) > 0) do
