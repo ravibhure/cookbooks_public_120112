@@ -389,8 +389,8 @@ action :enable_replication do
     block do
       types_file = ::File.join(node[:rs_utils][:collectd_share], 'types.db')
       typesdb = IO.read(types_file)
-      unless typesdb.include?('bytes-delta') && typesdb.include?('pg_rep-status')
-        typesdb += "\nbytes-delta               value:GAUGE:0:200000000\npg_rep-status             value:GAUGE:0:200000000"
+      unless typesdb.include?('pg_delta') && typesdb.include?('pg_status')
+        typesdb += "\npg_delta               bytes:GAUGE:0:1099511627776\npg_status             value:GAUGE:0:200000000"
         ::File.open(types_file, "w") { |f| f.write(typesdb) }
       end
     end

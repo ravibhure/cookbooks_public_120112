@@ -8,7 +8,8 @@
 require 'getoptlong'
 require 'rubygems'
 
-PLUGIN_NAME = 'pg_cluster_status'
+#PLUGIN_NAME = 'pg_cluster_status'
+PLUGIN_NAME = 'processes-postgresql'
 
 def usage
   puts("#{$0} -m <masterip> -s <slaveip> -h <host_id> [-i <sampling_interval>]")
@@ -109,14 +110,14 @@ begin
     if ( slavestatus == true )
           if ( slavestate == true )
             megs = "1"
-            print "PUTVAL #{hostname}/#{PLUGIN_NAME}/pg_rep-status  interval=#{sampling_interval} #{start_run}:#{megs}"
+            print "PUTVAL #{hostname}/#{PLUGIN_NAME}/pg_status  interval=#{sampling_interval} #{start_run}:#{megs}"
           else
             megs = "0"
-            print "PUTVAL #{hostname}/#{PLUGIN_NAME}/pg_rep-status  interval=#{sampling_interval} #{start_run}:#{megs}"
+            print "PUTVAL #{hostname}/#{PLUGIN_NAME}/pg_status  interval=#{sampling_interval} #{start_run}:#{megs}"
           end
     else
       megs = "0"
-      print "PUTVAL #{hostname}/#{PLUGIN_NAME}/pg_rep-status  interval=#{sampling_interval} #{start_run}:#{megs}"
+      print "PUTVAL #{hostname}/#{PLUGIN_NAME}/pg_status  interval=#{sampling_interval} #{start_run}:#{megs}"
     end
 
     # sleep to make the interval

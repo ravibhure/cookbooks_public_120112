@@ -8,7 +8,9 @@
 require 'getoptlong'
 require 'rubygems'
 
-PLUGIN_NAME = 'check_hot_standby_delay'
+#PLUGIN_NAME = 'check_hot_standby_delay'
+PLUGIN_NAME = 'processes-postgresql'
+
 LAG_ALERT = 32 # Alert after 2 WAL segments worth of lag. (MB)
 
 def usage
@@ -114,7 +116,7 @@ begin
     next_run = start_run + sampling_interval
 
     # collectd data and print the values ==> set your code here for monitoring
-    print "PUTVAL #{hostname}/#{PLUGIN_NAME}/bytes-delta interval=#{sampling_interval} #{start_run}:#{lag_in_megs}"
+    print "PUTVAL #{hostname}/#{PLUGIN_NAME}/pg_delta interval=#{sampling_interval} #{start_run}:#{lag_in_megs}"
 
     # sleep to make the interval
     while((time_left = (next_run - Time.now.to_i)) > 0) do
