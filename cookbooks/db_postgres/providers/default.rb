@@ -385,6 +385,18 @@ action :enable_replication do
     cookbook 'db_postgres'
   end
 
+  # Setting pg_state and pg_data types for pg slave monitoring into types.db
+  ruby_block "add_collectd_gauges" do
+    block do
+      types_file = ::File.join(node[:rs_utils][:collectd_share], 'types.db')
+      typesdb = IO.read(types_file)
+      unless typesdb.include?('pg_data') && typesdb.include?('pg_state')
+        typesdb += "\npg_data                 value:GAUGE:0:9223372036854775807\npg_state                value:GAUGE:0:65535"
+        ::File.open(types_file, "w") { |f| f.write(typesdb) }
+      end
+    end
+  end
+
   # Restart collectd after all done to run monitoring scripts on slave
   execute "/etc/init.d/collectd restart" 
 

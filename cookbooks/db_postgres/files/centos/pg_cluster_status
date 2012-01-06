@@ -8,7 +8,7 @@
 require 'getoptlong'
 require 'rubygems'
 
-PLUGIN_TYPE = 'ps_state'
+PLUGIN_TYPE = 'pg_state'
 PLUGIN_NAME = 'pg_cluster_status'
 
 def usage

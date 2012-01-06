@@ -8,7 +8,7 @@
 require 'getoptlong'
 require 'rubygems'
 
-PLUGIN_TYPE = 'ps_data'
+PLUGIN_TYPE = 'pg_data'
 PLUGIN_NAME = 'check_hot_standby_delay'
 
 LAG_ALERT = 32 # Alert after 2 WAL segments worth of lag. (MB)
