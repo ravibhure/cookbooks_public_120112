@@ -134,7 +134,7 @@ action :install_client do
   # Install PostgreSQL 9.1.1 package(s)
   if node[:platform] == "centos"
    arch = node[:kernel][:machine]
-   arch = "x86_64" if arch == "i386"
+   arch = "i386" unless arch == "x86_64"
   
   # Install PostgreSQL GPG Key (http://yum.postgresql.org/9.1/redhat/rhel-5-(arch)/pgdg-centos91-9.1-4.noarch.rpm)
  
@@ -174,7 +174,7 @@ action :install_server do
   action_install_client
 
   arch = node[:kernel][:machine]
-  arch = "x86_64" if arch == "i386"
+  arch = "i386" unless arch == "x86_64"
  
   package "uuid" do
     action :install

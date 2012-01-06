@@ -88,7 +88,6 @@ begin
     mystatus = pg_status
     if ( mystatus == true )
       # pg status is down, exiting script to avoid un-wanted errors on PUTVAL
-      print "PUTVAL #{hostname}/#{PLUGIN_NAME}/#{PLUGIN_TYPE}  interval=#{sampling_interval} #{start_run}:#{megs}"
       exit 1
     else
       mquery = `psql -h #{masterip} -U postgres -c "select client_addr, state from pg_stat_replication" |grep "#{slaveip}"`
