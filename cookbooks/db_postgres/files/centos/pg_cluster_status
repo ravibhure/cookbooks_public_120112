@@ -8,8 +8,7 @@
 require 'getoptlong'
 require 'rubygems'
 
-#PLUGIN_NAME = 'pg_cluster_status'
-PLUGIN_NAME = 'processes-postgresql'
+PLUGIN_NAME = 'pg_cluster_status'
 
 def usage
   puts("#{$0} -m <masterip> -s <slaveip> -h <host_id> [-i <sampling_interval>]")
@@ -110,15 +109,15 @@ begin
     if ( slavestatus == true )
           if ( slavestate == true )
             megs = "1"
-            print "PUTVAL #{hostname}/#{PLUGIN_NAME}/pg_status  interval=#{sampling_interval} #{start_run}:#{megs}"
           else
             megs = "0"
-            print "PUTVAL #{hostname}/#{PLUGIN_NAME}/pg_status  interval=#{sampling_interval} #{start_run}:#{megs}"
           end
     else
       megs = "0"
-      print "PUTVAL #{hostname}/#{PLUGIN_NAME}/pg_status  interval=#{sampling_interval} #{start_run}:#{megs}"
     end
+
+ # collectd data and print the values ==> set your code here for monitoring
+    print "PUTVAL #{hostname}/#{PLUGIN_NAME}/pg_status  interval=#{sampling_interval} #{start_run}:#{megs}"
 
     # sleep to make the interval
     while((time_left = (next_run - Time.now.to_i)) > 0) do
