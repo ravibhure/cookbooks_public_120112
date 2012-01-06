@@ -104,7 +104,7 @@ begin
       slave_xlog = `psql -h #{slaveip} -U postgres -c "SELECT pg_last_xlog_receive_location() AS receive" | xargs|awk '{print $3}'`
     end
     # hex result converting to bytes
-    lag_in_megs = ( find_lag( slave_xlog ).to_f / 1024 / 1024 ).abs.to_i
+    lag_in_megs = ( find_lag( slave_xlog ).to_f / 1024 / 1024 ).abs
   rescue => err
     # Unable to retrieve required info from the slave.
     exit 1
