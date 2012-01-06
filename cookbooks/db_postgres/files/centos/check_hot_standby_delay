@@ -8,6 +8,7 @@
 require 'getoptlong'
 require 'rubygems'
 
+PLUGIN_TYPE = 'ps_data'
 PLUGIN_NAME = 'check_hot_standby_delay'
 
 LAG_ALERT = 32 # Alert after 2 WAL segments worth of lag. (MB)
@@ -71,7 +72,7 @@ begin
     status = `/usr/pgsql-9.1/bin/pg_controldata /var/lib/pgsql/9.1/data | grep "Database cluster state" |cut -d: -f2 | xargs`
     return true if status =~ /shut down/
   end
-  
+
   while true do
   ### Given an +xlog+ position from a slave server, return
   ### the number of bytes the slave needs to replay before it
@@ -82,7 +83,7 @@ begin
     # hex result converting to bytes
     return (( $segment.hex - s_segment.hex ) * $segbytes) + ( $offset.hex - s_offset.hex )
   end
-  
+
   # Get master xlog data
   begin
     $segbytes = `psql -h #{masterip} -U postgres -c "SHOW wal_segment_size"`.sub( /\D+/, '' ).to_i << 20
@@ -97,25 +98,25 @@ begin
   begin
     mystatus = pg_status
     if ( mystatus == true )
-      # pg status is down, exiting script to avoid un-wanted errors on PUTVAL  
+      # pg status is down, exiting script to avoid un-wanted errors on PUTVAL
       exit 1
     else
       slave_xlog = `psql -h #{slaveip} -U postgres -c "SELECT pg_last_xlog_receive_location() AS receive" | xargs|awk '{print $3}'`
     end
     # hex result converting to bytes
-    lag_in_megs = ( find_lag( slave_xlog ).to_f / 1024 / 1024 ).abs.to_i    
+    lag_in_megs = ( find_lag( slave_xlog ).to_f / 1024 / 1024 ).abs.to_i
   rescue => err
     # Unable to retrieve required info from the slave.
     exit 1
   end
 
-    
+
   # Collection loop
     start_run = Time.now.to_i
     next_run = start_run + sampling_interval
 
     # collectd data and print the values ==> set your code here for monitoring
-    print "PUTVAL #{hostname}/#{PLUGIN_NAME}/pg_delta interval=#{sampling_interval} #{start_run}:#{lag_in_megs}"
+    print "PUTVAL #{hostname}/#{PLUGIN_NAME}/#{PLUGIN_TYPE} interval=#{sampling_interval} #{start_run}:#{lag_in_megs}"
 
     # sleep to make the interval
     while((time_left = (next_run - Time.now.to_i)) > 0) do
