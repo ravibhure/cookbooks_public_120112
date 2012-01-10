@@ -60,7 +60,7 @@ define :db_postgres_set_privileges, :preset => "administrator", :username => nil
           Chef::Log.info "User #{username} already exists, updating user using current inputs"
           conn.exec("ALTER USER #{username} SUPERUSER CREATEDB CREATEROLE INHERIT LOGIN ENCRYPTED PASSWORD '#{password}'")
         else
-          Chef::Log.info "creating replication user #{username}"
+          Chef::Log.info "creating administrator user #{username}"
           conn.exec("CREATE USER #{username} SUPERUSER CREATEDB CREATEROLE INHERIT LOGIN ENCRYPTED PASSWORD '#{password}'")
         end	
         
@@ -81,7 +81,7 @@ define :db_postgres_set_privileges, :preset => "administrator", :username => nil
           Chef::Log.info "User #{username} already exists, updating user using current inputs"
           conn.exec("ALTER USER #{username} NOSUPERUSER CREATEDB NOCREATEROLE INHERIT LOGIN ENCRYPTED PASSWORD '#{password}'")
         else
-          Chef::Log.info "creating replication user #{username}"
+          Chef::Log.info "creating application user #{username}"
           conn.exec("CREATE USER #{username} NOSUPERUSER CREATEDB NOCREATEROLE INHERIT LOGIN ENCRYPTED PASSWORD '#{password}'")
         end      
       #  conn.exec("GRANT #{user_role} TO #{username}")
