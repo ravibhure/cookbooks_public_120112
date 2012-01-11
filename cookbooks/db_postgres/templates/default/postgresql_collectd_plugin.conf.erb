@@ -5,45 +5,14 @@
 #
 # This file is distributed under the same terms as collectd itself.
 
+LoadPlugin postgresql
 <Plugin postgresql>
-  <Query magic>
-    Statement "SELECT magic FROM wizard WHERE host = $1;"
-    Param <%= node[:cloud][:private_ips][0] %>
-    <Result>
-      Type gauge
-      InstancePrefix "magic"
-      ValuesFrom magic
-    </Result>
-  </Query>
-
-  <Query rt36_tickets>
-    Statement "SELECT COUNT(type) AS count, type \
-                      FROM (SELECT CASE \
-                                   WHEN resolved = 'epoch' THEN 'open' \
-                                   ELSE 'resolved' END AS type \
-                                   FROM tickets) type \
-                      GROUP BY type;"
-    <Result>
-      Type counter
-      InstancePrefix "rt36_tickets"
-      InstancesFrom "type"
-      ValuesFrom "count"
-    </Result>
-  </Query>
-
-  <Database foo>
-    Host "localhost"
-    Port "5432"
-    User "postgres"
-    Password ""
-    SSLMode "prefer"
-    KRBSrvName "kerberos_service_name"
-    Query magic
-  </Database>
-
-  <Database bar>
-    Service "service_name"
-    Query backend # predefined
-    Query rt36_tickets
-  </Database>
+<Query dummy>
+Statement ""
+</Query>
+<Database "<%= node[:db][:dump][:database_name] %>">
+Host "/var/run/postgresql"
+User "postgres"
+Password ""
+</Database>
 </Plugin>
