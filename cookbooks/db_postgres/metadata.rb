@@ -35,3 +35,10 @@ attribute "db_postgres/slave/sync",
   :choice => ["enable", "disable"],
   :default => "disable",
   :recipes => [ "db_postgres::setup_pgmaster" ]
+
+attribute "db_postgres/database_name",
+  :display_name => "Database Name",
+  :description => "Enter the name of the PostgreSQL database for setting up monitoring.Ex: postgres",
+  :choice => ["postgres"],
+  :default => "postgres",
+  :recipes => [ "db_postgres::default"]

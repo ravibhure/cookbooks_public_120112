@@ -43,6 +43,20 @@
       ],
       "display_name": "General Database Options"
     },
+    "db_postgres/database_name": {
+      "required": "optional",
+      "calculated": false,
+      "choice": [
+        "postgres"
+      ],
+      "default": "postgres",
+      "type": "string",
+      "recipes": [
+        "db_postgres::default"
+      ],
+      "display_name": "Database Name",
+      "description": "Enter the name of the PostgreSQL database for setting up monitoring.Ex: postgres"
+    },
     "db_postgres/server_usage": {
       "required": "optional",
       "calculated": false,
